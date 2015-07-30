@@ -1,0 +1,11 @@
+{
+  "agents": [
+  	{
+      "host" : "10.71.71.102",
+      "port" : "3000",
+      "user" : "admin",
+      "password" : "aerospike",
+      "clusterName": "Cluster 102"
+    }
+  ]
+}
