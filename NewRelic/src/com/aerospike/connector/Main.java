@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.newrelic.metrics.publish.Runner;
 import com.newrelic.metrics.publish.configuration.ConfigurationException;
+import com.newrelic.metrics.publish.util.Logger;
 
 /**
  * Main class for Aerospike Agent
@@ -17,18 +18,20 @@ public class Main {
 	public static Map<String, String> readTpsHistory = new HashMap<String, String>();
 	public static Map<String, String> writeTpsHistory = new HashMap<String, String>();
 	public static Map<String, String> statsHistory = new HashMap<String, String>();
+	
+	private static final Logger logger = Logger.getLogger(Main.class);
 
 	/**
 	 * Constructor for Main.
 	 */
 	public Main() {
 
-		Integer ts = (int) Calendar.getInstance().get(Calendar.MILLISECOND);
-		readTpsHistory.put("x", Integer.toString(ts));
+		Integer timeStamp = (int) Calendar.getInstance().get(Calendar.MILLISECOND);
+		readTpsHistory.put("x", Integer.toString(timeStamp));
 		readTpsHistory.put("y", null);
 		readTpsHistory.put("secondary", null);
 
-		writeTpsHistory.put("x", Integer.toString(ts));
+		writeTpsHistory.put("x", Integer.toString(timeStamp));
 		writeTpsHistory.put("y", null);
 		writeTpsHistory.put("secondary", null);
 	}
@@ -111,6 +114,7 @@ public class Main {
 			runner.add(new AerospikeAgentFactory());
 			runner.setupAndRun(); // Never Returns
 		} catch (ConfigurationException configurationException) {
+			logger.error("ERROR: " , configurationException);
 			System.err.println("ERROR: " + configurationException.getMessage());
 			System.exit(-1);
 		}

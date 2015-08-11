@@ -10,6 +10,7 @@ import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.Info;
 import com.aerospike.client.cluster.Node;
 import com.aerospike.client.policy.ClientPolicy;
+import com.newrelic.metrics.publish.util.Logger;
 
 /**
  * Base class to communicate with Aerospike.
@@ -21,6 +22,8 @@ public class Base {
 
 	private AerospikeClient client;
 	private ClientPolicy policy;
+
+	private static final Logger logger = Logger.getLogger(Base.class);
 
 	/**
 	 * Base Constructor
@@ -54,6 +57,8 @@ public class Base {
 			this.policy.timeout = 85000;
 			this.client = new AerospikeClient(policy, ip, port);
 			if (this.client == null || !this.client.isConnected()) {
+				logger.info("ERROR: "
+						+ "Connection to Aerospike cluster failed! Please check the server settings and try again!");
 				System.out.println(
 						"ERROR: Connection to Aerospike cluster failed! Please check the server settings and try again!");
 			}
@@ -116,11 +121,9 @@ public class Base {
 			nodeStats.clear();
 			for (String stat : stats) {
 				String[] pair = stat.split("=");
-				try {
+				if (Utils.validNumber(pair[1])) {
 					Float val = Float.parseFloat(pair[1]);
 					nodeStats.put(pair[0], String.valueOf(val));
-				} catch (NumberFormatException e) {
-
 				}
 			}
 		}
@@ -153,11 +156,9 @@ public class Base {
 			stats = Info.request(null, node, filter).split(";");
 			for (String stat : stats) {
 				String[] pair = stat.split("=");
-				try {
+				if (Utils.validNumber(pair[1])) {
 					Float val = Float.parseFloat(pair[1]);
 					namespaceStats.put(pair[0], String.valueOf(val));
-				} catch (NumberFormatException e) {
-
 				}
 			}
 
@@ -374,9 +375,10 @@ public class Base {
 			Float freeBytes = (Float.parseFloat(nodeStats.get("total-bytes-memory"))
 					- Float.parseFloat(nodeStats.get("used-bytes-memory")));
 			memoryStats.put("free-bytes-memory", Float.toString(freeBytes));
-		} catch (Exception e) {
+		} catch (Exception exception) {
 			memoryStats.put("free-bytes-memory", "n/s");
 			memoryStats.put("total-bytes-memory", "n/s");
+			logger.error("ERROR: ", exception);
 		}
 
 		return memoryStats;
@@ -398,9 +400,10 @@ public class Base {
 			Float freeBytes = (Float.parseFloat(nodeStats.get("total-bytes-disk"))
 					- Float.parseFloat(nodeStats.get("used-bytes-disk")));
 			diskStats.put("free-bytes-disk", Float.toString(freeBytes));
-		} catch (Exception e) {
+		} catch (Exception exception) {
 			diskStats.put("free-bytes-disk", "n/s");
 			diskStats.put("total-bytes-disk", "n/s");
+			logger.error("ERROR: ", exception);
 		}
 		return diskStats;
 	}
