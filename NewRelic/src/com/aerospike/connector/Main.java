@@ -18,7 +18,7 @@ public class Main {
 	public static Map<String, String> readTpsHistory = new HashMap<String, String>();
 	public static Map<String, String> writeTpsHistory = new HashMap<String, String>();
 	public static Map<String, String> statsHistory = new HashMap<String, String>();
-	
+
 	private static final Logger logger = Logger.getLogger(Main.class);
 
 	/**
@@ -114,8 +114,7 @@ public class Main {
 			runner.add(new AerospikeAgentFactory());
 			runner.setupAndRun(); // Never Returns
 		} catch (ConfigurationException configurationException) {
-			logger.error("ERROR: " , configurationException);
-			System.err.println("ERROR: " + configurationException.getMessage());
+			logger.error("ERROR: ", configurationException);
 			System.exit(-1);
 		}
 	}

@@ -59,8 +59,6 @@ public class Base {
 			if (this.client == null || !this.client.isConnected()) {
 				logger.info("ERROR: "
 						+ "Connection to Aerospike cluster failed! Please check the server settings and try again!");
-				System.out.println(
-						"ERROR: Connection to Aerospike cluster failed! Please check the server settings and try again!");
 			}
 		}
 	}
