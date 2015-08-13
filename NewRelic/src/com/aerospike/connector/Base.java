@@ -119,6 +119,7 @@ public class Base {
 			nodeStats.clear();
 			for (String stat : stats) {
 				String[] pair = stat.split("=");
+				pair[1] = Utils.handleAerospikeString(pair[1]);
 				if (Utils.validNumber(pair[1])) {
 					Float val = Float.parseFloat(pair[1]);
 					nodeStats.put(pair[0], String.valueOf(val));
@@ -154,6 +155,7 @@ public class Base {
 			stats = Info.request(null, node, filter).split(";");
 			for (String stat : stats) {
 				String[] pair = stat.split("=");
+				pair[1] = Utils.handleAerospikeString(pair[1]);
 				if (Utils.validNumber(pair[1])) {
 					Float val = Float.parseFloat(pair[1]);
 					namespaceStats.put(pair[0], String.valueOf(val));
@@ -219,7 +221,7 @@ public class Base {
 				previousValue = Float.parseFloat(values[j]);
 				String k = "";
 				if (previousKey != "") {
-					// gt == 0x003E && lt == 0x003C
+					// unicode for gt == 0x003E && lt == 0x003C
 					k = "\u003E " + keys[j].substring(1) + " to \u003C " + previousKey.substring(1);
 				} else {
 					k = "\u003E " + keys[j].substring(1);
