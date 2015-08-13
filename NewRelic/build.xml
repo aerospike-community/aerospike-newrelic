@@ -67,7 +67,10 @@
 		<!--  Creating a tar  -->
 		<mkdir dir="${build.tar.src.dir}" />
 		<copy todir="${build.tar.src.dir}/config">
-			<fileset dir="${conf.dir}" />
+			<fileset dir="${conf.dir}">
+				<exclude name="newrelic.json"/>
+				<exclude name="plugin.json"/>
+			</fileset>
 		</copy>
 		<copy file="${build.jar.dir}/${jarfile}" todir="${build.tar.src.dir}" />
 		<tar compression="gzip" destfile="${dist.dir}/${tarfile}">

@@ -1,0 +1,11 @@
+{
+  "agents": [
+  	{
+      "host" : "<HOST IP>",
+      "port" : "3000",
+      "user" : "<USERNAME>",
+      "password" : "<PASSWORD>",
+      "clusterName": "<CLUSTER NAME>"
+    }
+  ]
+}
