@@ -25,9 +25,9 @@ public class AerospikeAgent extends Agent {
 	private String name;
 	private Base base;
 	private String metricBaseName;
-	
+
 	private static final Logger logger = Logger.getLogger(AerospikeAgent.class);
-	
+
 	/**
 	 * Constructor for Aerospike Agent
 	 * 
@@ -52,7 +52,7 @@ public class AerospikeAgent extends Agent {
 			this.name = name.replaceAll("\\s", "");
 			this.metricBaseName = "aerospike/" + this.name;
 		} catch (Exception exception) {
-			logger.error("Error reading configuration parameters : " , exception);
+			logger.error("Error reading configuration parameters : ", exception);
 			throw new ConfigurationException("Error reading configuration parameters...", exception);
 		}
 	}
@@ -85,20 +85,21 @@ public class AerospikeAgent extends Agent {
 
 		Map<String, String> memoryStats = base.getMemoryStats(nodeStats);
 		Map<String, String> diskStats = base.getDiskStats(nodeStats);
-		if (Utils.validNumber(diskStats.get("free-bytes-disk"))) {
+		
+		if (Utils.validNumber(diskStats.get("free-bytes-disk")))
 			reportMetric(nodeStatPrefix + "/disk_usage_free", "", Float.parseFloat(diskStats.get("free-bytes-disk")));
-		}
-		if (Utils.validNumber(diskStats.get("total-bytes-disk"))) {
+
+		if (Utils.validNumber(diskStats.get("total-bytes-disk")))
 			reportMetric(nodeStatPrefix + "/disk_usage_total", "", Float.parseFloat(diskStats.get("total-bytes-disk")));
-		}
-		if (Utils.validNumber(memoryStats.get("free-bytes-memory"))) {
+
+		if (Utils.validNumber(memoryStats.get("free-bytes-memory")))
 			reportMetric(nodeStatPrefix + "/memory_usage_free", "",
 					Float.parseFloat(memoryStats.get("free-bytes-memory")));
-		}
-		if (Utils.validNumber(memoryStats.get("total-bytes-memory"))) {
+
+		if (Utils.validNumber(memoryStats.get("total-bytes-memory")))
 			reportMetric(nodeStatPrefix + "/memory_usage_total", "",
 					Float.parseFloat(memoryStats.get("total-bytes-memory")));
-		}
+	
 		reportThroughput(nodeStats);
 		return nodeStats;
 	}
