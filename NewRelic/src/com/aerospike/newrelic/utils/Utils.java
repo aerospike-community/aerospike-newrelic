@@ -1,4 +1,4 @@
-package com.aerospike.connector;
+package com.aerospike.newrelic.utils;
 
 /**
  * Utils class having utility methods.

@@ -1,4 +1,4 @@
-package com.aerospike.connector;
+package com.aerospike.newrelic.connector;
 
 import java.util.Map;
 

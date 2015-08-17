@@ -1,4 +1,4 @@
-package com.aerospike.connector;
+package com.aerospike.newrelic.connector;
 
 import java.util.Arrays;
 import java.util.Calendar;
@@ -10,6 +10,7 @@ import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.Info;
 import com.aerospike.client.cluster.Node;
 import com.aerospike.client.policy.ClientPolicy;
+import com.aerospike.newrelic.utils.Utils;
 import com.newrelic.metrics.publish.util.Logger;
 
 /**
