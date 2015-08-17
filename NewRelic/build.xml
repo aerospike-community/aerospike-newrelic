@@ -56,7 +56,7 @@
 				<attribute name="Built-Date" value="${TODAY}" />
 				<attribute name="Specification-Version" value="${version}" />
 				<attribute name="Implementation-Version" value="${version} ${TODAY}" />
-				<attribute name="Main-Class" value="com.aerospike.connector.Main" />
+				<attribute name="Main-Class" value="com.aerospike.newrelic.connector.Main" />
 			</manifest>
 			<fileset dir="${build.classes.dir}" />
 			<zipgroupfileset dir="${lib.dir}" includes="*.jar" />
