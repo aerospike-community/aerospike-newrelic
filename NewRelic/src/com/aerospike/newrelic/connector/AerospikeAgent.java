@@ -1,7 +1,8 @@
-package com.aerospike.connector;
+package com.aerospike.newrelic.connector;
 
 import java.util.Map;
 
+import com.aerospike.newrelic.utils.Utils;
 import com.newrelic.metrics.publish.Agent;
 import com.newrelic.metrics.publish.configuration.ConfigurationException;
 import com.newrelic.metrics.publish.util.Logger;
@@ -14,7 +15,7 @@ import com.newrelic.metrics.publish.util.Logger;
  */
 public class AerospikeAgent extends Agent {
 
-	private static final String GUID = "com.aerospike.connector";
+	private static final String GUID = "com.aerospike.newrelic.connector";
 	private static final String VERSION = "1.0.0";
 
 	private String user;
