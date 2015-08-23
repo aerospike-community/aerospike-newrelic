@@ -189,10 +189,13 @@ public class Base {
 		Node node = getAerospikeNode(ip);
 		String filter = "latency:";
 		String latencyString = "";
+		String[] latencyBuckets = {};
+		
 		if (node != null)
 			latencyString = Info.request(null, node, filter);
-
-		String[] latencyBuckets = latencyString.split(";");
+		
+		if(latencyString.length() != 0)
+			latencyBuckets = latencyString.split(";");
 
 		for (Integer i = 0; i < latencyBuckets.length; i += 2) {
 			Map<String, String> data = new HashMap<String, String>();
