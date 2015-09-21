@@ -43,14 +43,15 @@ public class AerospikeAgent extends Agent {
 
 			this.host = host;
 			this.port = Integer.parseInt(port);
-			if (user.equalsIgnoreCase("n/a"))
+			if (user.equalsIgnoreCase("n/a") || user.equalsIgnoreCase("") || password.equalsIgnoreCase("n/a") || password.equalsIgnoreCase(""))
 				this.user = this.password = null;
 			else {
 				this.user = user;
 				this.password = password;
 			}
 			this.name = name.replaceAll("\\s", "");
-			this.metricBaseName = "aerospike/" + this.name;
+			/*this.metricBaseName = "aerospike/" + this.name;*/
+			this.metricBaseName = "aerospike/ClusterName";
 		} catch (Exception exception) {
 			logger.error("Error reading configuration parameters : ", exception);
 			throw new ConfigurationException("Error reading configuration parameters...", exception);
