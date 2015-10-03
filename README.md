@@ -8,14 +8,6 @@ Collection and visualization of various metric from Aerospike includes :
 - Namespaces Statistics
 - Throughput
 
-**Note** - Namespace tab is not present on the default dashboards. User can visualize namespace metrics as per their namespaces.
-
-Example: 
-
-```
-Component/aerospike/{cluster_name}/{namespace_name}/{some_namespace_metric[]}
-```
-
 ----
 
 ## Requirements
@@ -106,8 +98,7 @@ Below is an example of the `plugin.json` file's contents :
 ```
 
 **Note** 
-- If running community/non-secure Aerospike server then use user/password as **n/a**.
-- The `clusterName` attribute is used as base for metric naming convention in the New Relic UI. 
+- If running community/non-secure Aerospike server then use user/password as **n/a** or left blank **""**.
 
 #### Configuring the `newrelic.json` file: 
 

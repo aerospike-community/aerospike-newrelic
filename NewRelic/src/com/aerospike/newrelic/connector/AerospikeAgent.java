@@ -22,7 +22,7 @@ public class AerospikeAgent extends Agent {
 	private String password;
 	private String host;
 	private Integer port;
-	private String name;
+	//private String name;
 	private Base base;
 	private String metricBaseName;
 
@@ -49,9 +49,13 @@ public class AerospikeAgent extends Agent {
 				this.user = user;
 				this.password = password;
 			}
-			this.name = name.replaceAll("\\s", "");
+			//this.name = name.replaceAll("\\s", "");
 			/*this.metricBaseName = "aerospike/" + this.name;*/
 			this.metricBaseName = "aerospike/ClusterName";
+			
+			this.base = new Base();
+			this.base.createAerospikeClient(this.host, this.port, this.user, this.password);
+			
 		} catch (Exception exception) {
 			logger.error("Error reading configuration parameters : ", exception);
 			throw new ConfigurationException("Error reading configuration parameters...", exception);
@@ -177,13 +181,13 @@ public class AerospikeAgent extends Agent {
 	@Override
 	public void pollCycle() {
 
-		base = new Base();
-
-		base.createAerospikeClient(this.host, this.port, this.user, this.password);
+		/*base = new Base();*/
+		/*base.createAerospikeClient(this.host, this.port, this.user, this.password);*/
+		
 		Map<String, String> nodeStats = reportNodeStatistics();
 		reportNodeLatency();
 		Main.setStatistcs(nodeStats);
-
+		
 		String[] namespaces = base.getNamespaces(this.host, this.port, this.user, this.password);
 
 		if (namespaces.length != 0) {
@@ -191,5 +195,8 @@ public class AerospikeAgent extends Agent {
 				reportNamespaceStats(namespace);
 			}
 		}
+		
+		//Clean client connections
+		base.closeClientConnections();
 	}
 }

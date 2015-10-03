@@ -29,11 +29,11 @@ public class Base {
 	/**
 	 * Base Constructor
 	 */
-	public Base() {
+	/*public Base() {
 
 		this.client = null;
 		this.policy = null;
-	}
+	}*/
 
 	/**
 	 * Method to initialize Aerospike client and policy.
@@ -56,6 +56,8 @@ public class Base {
 				this.policy.password = password;
 			}
 			this.policy.timeout = 85000;
+			this.policy.maxThreads = 10;
+			this.policy.maxSocketIdle = 10;
 			this.client = new AerospikeClient(policy, ip, port);
 			if (this.client == null || !this.client.isConnected()) {
 				logger.info("ERROR: "
@@ -190,11 +192,11 @@ public class Base {
 		String filter = "latency:";
 		String latencyString = "";
 		String[] latencyBuckets = {};
-		
+
 		if (node != null)
 			latencyString = Info.request(null, node, filter);
-		
-		if(latencyString.length() != 0)
+
+		if (latencyString.length() != 0)
 			latencyBuckets = latencyString.split(";");
 
 		for (Integer i = 0; i < latencyBuckets.length; i += 2) {
@@ -410,5 +412,14 @@ public class Base {
 			logger.error("ERROR: ", exception);
 		}
 		return diskStats;
+	}
+
+	/**
+	 * Method to close all connection to Aerospike server.
+	 * 
+	 */
+	public void closeClientConnections() {
+		if (this.client != null)
+			this.client.close();
 	}
 }
