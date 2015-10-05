@@ -196,6 +196,6 @@ public class AerospikeAgent extends Agent {
 		}
 
 		// Clean client connections
-		base.closeClientConnections();
+		// base.closeClientConnections();
 	}
 }

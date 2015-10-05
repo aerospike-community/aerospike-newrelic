@@ -55,7 +55,7 @@ public class Base {
 				this.policy.user = user;
 				this.policy.password = password;
 			}
-			this.policy.timeout = 85000;
+			//this.policy.timeout = 85000;
 			this.policy.maxThreads = 10;
 			this.policy.maxSocketIdle = 10;
 			this.client = new AerospikeClient(policy, ip, port);
@@ -276,19 +276,19 @@ public class Base {
 		else
 			oldWriteSuccess = "";
 
-		if (nodeStats.containsKey("stat_read_reqs"))
+		if (nodeStats != null && nodeStats.containsKey("stat_read_reqs"))
 			newReadReqs = nodeStats.get("stat_read_reqs");
 		else
 			newReadReqs = "";
-		if (nodeStats.containsKey("stat_read_success"))
+		if (nodeStats != null && nodeStats.containsKey("stat_read_success"))
 			newReadSuccess = nodeStats.get("stat_read_success");
 		else
 			newReadSuccess = "";
-		if (nodeStats.containsKey("stat_write_reqs"))
+		if (nodeStats != null && nodeStats.containsKey("stat_write_reqs"))
 			newWriteReqs = nodeStats.get("stat_write_reqs");
 		else
 			newWriteReqs = "";
-		if (nodeStats.containsKey("stat_write_success"))
+		if (nodeStats != null && nodeStats.containsKey("stat_write_success"))
 			newWriteSuccess = nodeStats.get("stat_write_success");
 		else
 			newWriteSuccess = "";
