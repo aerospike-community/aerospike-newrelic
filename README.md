@@ -87,17 +87,18 @@ Below is an example of the `plugin.json` file's contents :
 {{
   "agents": [
   	{
+      "name" : "plugin name"
       "host" : "ip",
       "port" : "port",
       "user" : "username",
-      "password" : "password",
-      "clusterName": "Cluster Name"
+      "password" : "password"
     }
   ]
 }
 ```
 
 **Note** 
+- name attribute is the name of plugin and mandatory field. 
 - If running community/non-secure Aerospike server then use user/password as **n/a** or left blank **""**.
 
 #### Configuring the `newrelic.json` file: 

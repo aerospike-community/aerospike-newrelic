@@ -1,5 +1,6 @@
 package com.aerospike.newrelic.connector;
 
+import static com.aerospike.newrelic.utils.Constants.METRIC_BASE_NAME;
 import java.util.Map;
 
 import com.aerospike.newrelic.utils.Utils;
@@ -22,7 +23,7 @@ public class AerospikeAgent extends Agent {
 	private String password;
 	private String host;
 	private Integer port;
-	//private String name;
+	private String name;
 	private Base base;
 	private String metricBaseName;
 
@@ -43,19 +44,15 @@ public class AerospikeAgent extends Agent {
 
 			this.host = host;
 			this.port = Integer.parseInt(port);
-			if (user.equalsIgnoreCase("n/a") || user.equalsIgnoreCase("") || password.equalsIgnoreCase("n/a") || password.equalsIgnoreCase(""))
-				this.user = this.password = null;
-			else {
-				this.user = user;
-				this.password = password;
-			}
-			//this.name = name.replaceAll("\\s", "");
-			/*this.metricBaseName = "aerospike/" + this.name;*/
-			this.metricBaseName = "aerospike/ClusterName";
-			
+			this.user = user;
+			this.password = password;
+			this.name = name;
+			this.metricBaseName = METRIC_BASE_NAME;
+
+			// Creating AerospikeClient
 			this.base = new Base();
 			this.base.createAerospikeClient(this.host, this.port, this.user, this.password);
-			
+
 		} catch (Exception exception) {
 			logger.error("Error reading configuration parameters : ", exception);
 			throw new ConfigurationException("Error reading configuration parameters...", exception);
@@ -69,7 +66,7 @@ public class AerospikeAgent extends Agent {
 	 */
 	@Override
 	public String getAgentName() {
-		return "Aerospike";
+		return name;
 	}
 
 	/**
@@ -90,7 +87,7 @@ public class AerospikeAgent extends Agent {
 
 		Map<String, String> memoryStats = base.getMemoryStats(nodeStats);
 		Map<String, String> diskStats = base.getDiskStats(nodeStats);
-		
+
 		if (Utils.validNumber(diskStats.get("free-bytes-disk")))
 			reportMetric(nodeStatPrefix + "/disk_usage_free", "", Float.parseFloat(diskStats.get("free-bytes-disk")));
 
@@ -104,7 +101,7 @@ public class AerospikeAgent extends Agent {
 		if (Utils.validNumber(memoryStats.get("total-bytes-memory")))
 			reportMetric(nodeStatPrefix + "/memory_usage_total", "",
 					Float.parseFloat(memoryStats.get("total-bytes-memory")));
-	
+
 		reportThroughput(nodeStats);
 		return nodeStats;
 	}
@@ -181,13 +178,15 @@ public class AerospikeAgent extends Agent {
 	@Override
 	public void pollCycle() {
 
-		/*base = new Base();*/
-		/*base.createAerospikeClient(this.host, this.port, this.user, this.password);*/
-		
+		/* base = new Base(); */
+		/*
+		 * base.createAerospikeClient(this.host, this.port, this.user,
+		 * this.password);
+		 */
+
 		Map<String, String> nodeStats = reportNodeStatistics();
 		reportNodeLatency();
 		Main.setStatistcs(nodeStats);
-		
 		String[] namespaces = base.getNamespaces(this.host, this.port, this.user, this.password);
 
 		if (namespaces.length != 0) {
@@ -195,8 +194,8 @@ public class AerospikeAgent extends Agent {
 				reportNamespaceStats(namespace);
 			}
 		}
-		
-		//Clean client connections
+
+		// Clean client connections
 		base.closeClientConnections();
 	}
 }

@@ -1,5 +1,6 @@
 package com.aerospike.newrelic.utils;
 
+import static com.aerospike.newrelic.utils.Constants.*;
 /**
  * Utils class having utility methods.
  * 
@@ -7,11 +8,6 @@ package com.aerospike.newrelic.utils;
  *
  */
 public class Utils {
-
-	private static final String ZERO = "0";
-	private static final String ONE = "1";
-	private static final String TRUE = "true";
-	private static final String FALSE = "false";
 
 	/**
 	 * Method to check if metric is a valid number or not.
