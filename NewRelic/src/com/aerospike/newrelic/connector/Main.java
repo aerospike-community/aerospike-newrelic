@@ -1,9 +1,9 @@
 package com.aerospike.newrelic.connector;
 
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.aerospike.client.cluster.Node;
 import com.newrelic.metrics.publish.Runner;
 import com.newrelic.metrics.publish.configuration.ConfigurationException;
 import com.newrelic.metrics.publish.util.Logger;
@@ -15,51 +15,36 @@ import com.newrelic.metrics.publish.util.Logger;
  */
 public class Main {
 
-	public static Map<String, String> readTpsHistory = new HashMap<String, String>();
-	public static Map<String, String> writeTpsHistory = new HashMap<String, String>();
-	public static Map<String, String> statsHistory = new HashMap<String, String>();
+	public static Map<String, Map<String, String>> readTpsHistory = new HashMap<String, Map<String, String>>();
+	public static Map<String, Map<String, String>> writeTpsHistory = new HashMap<String, Map<String, String>>();
+	public static Map<String, Map<String, String>> statsHistory = new HashMap<String, Map<String, String>>();
 
 	private static final Logger logger = Logger.getLogger(Main.class);
 
 	/**
-	 * Constructor for Main.
-	 */
-	public Main() {
-
-		Integer timeStamp = (int) Calendar.getInstance().get(Calendar.MILLISECOND);
-		readTpsHistory.put("x", Integer.toString(timeStamp));
-		readTpsHistory.put("y", null);
-		readTpsHistory.put("secondary", null);
-
-		writeTpsHistory.put("x", Integer.toString(timeStamp));
-		writeTpsHistory.put("y", null);
-		writeTpsHistory.put("secondary", null);
-	}
-
-	/**
 	 * Getter method for read throughput history
 	 * 
-	 * @return Map<String, String> the read throughput history
+	 * @return Map<String, Map<String, String>> the read throughput history
 	 */
-	public static Map<String, String> getReadTpsHistory() {
+	public static Map<String, Map<String, String>> getReadTpsHistory() {
 		return readTpsHistory;
 	}
 
 	/**
 	 * Getter method for write throughput history
 	 * 
-	 * @return Map<String, String> the write throughput history
+	 * @return Map<String, Map<String, String>> the write throughput history
 	 */
-	public static Map<String, String> getWriteTpsHistory() {
+	public static Map<String, Map<String, String>> getWriteTpsHistory() {
 		return writeTpsHistory;
 	}
 
 	/**
 	 * Getter method for node statistics
 	 * 
-	 * @return Map<String, String> the statistics
+	 * @return Map<String, Map<String, String>> the statistics
 	 */
-	public static Map<String, String> getStatistics() {
+	public static Map<String, Map<String, String>> getStatistics() {
 		return statsHistory;
 	}
 
@@ -68,13 +53,16 @@ public class Main {
 	 * 
 	 * @param Map<String,
 	 *            String> read throughput data
+	 * @param node
+	 *            Aerospike node
 	 */
-	public static void setReadTpsHistory(Map<String, String> tpsData) {
+	public static void setReadTpsHistory(Map<String, String> tpsData, Node node) {
+		readTpsHistory.put(node.getHost().name, tpsData);
 		for (Map.Entry<String, String> entry : tpsData.entrySet()) {
 			boolean condition = entry.getKey().equalsIgnoreCase("x") || entry.getKey().equalsIgnoreCase("y")
 					|| entry.getKey().equalsIgnoreCase("secondary");
 			if (condition)
-				readTpsHistory.put(entry.getKey(), entry.getValue());
+				readTpsHistory.get(node.getHost().name).put(entry.getKey(), entry.getValue());
 		}
 	}
 
@@ -83,13 +71,16 @@ public class Main {
 	 * 
 	 * @param Map<String,
 	 *            String> write throughput data
+	 * @param node
+	 *            Aerospike node
 	 */
-	public static void setWriteTpsHistory(Map<String, String> tpsData) {
+	public static void setWriteTpsHistory(Map<String, String> tpsData, Node node) {
+		writeTpsHistory.put(node.getHost().name, tpsData);
 		for (Map.Entry<String, String> entry : tpsData.entrySet()) {
 			boolean condition = entry.getKey().equalsIgnoreCase("x") || entry.getKey().equalsIgnoreCase("y")
 					|| entry.getKey().equalsIgnoreCase("secondary");
 			if (condition)
-				writeTpsHistory.put(entry.getKey(), entry.getValue());
+				writeTpsHistory.get(node.getHost().name).put(entry.getKey(), entry.getValue());
 		}
 	}
 
@@ -97,9 +88,9 @@ public class Main {
 	 * Setter method for node statistics
 	 * 
 	 * @param Map<String,
-	 *            String> statistics
+	 *            Map<String, String>> statistics
 	 */
-	public static void setStatistcs(Map<String, String> stats) {
+	public static void setStatistcs(Map<String, Map<String, String>> stats) {
 		statsHistory = stats;
 	}
 

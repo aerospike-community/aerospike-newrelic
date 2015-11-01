@@ -27,15 +27,6 @@ public class Base {
 	private static final Logger logger = Logger.getLogger(Base.class);
 
 	/**
-	 * Base Constructor
-	 */
-	/*public Base() {
-
-		this.client = null;
-		this.policy = null;
-	}*/
-
-	/**
 	 * Method to initialize Aerospike client and policy.
 	 * 
 	 * @param ip
@@ -55,7 +46,7 @@ public class Base {
 				this.policy.user = user;
 				this.policy.password = password;
 			}
-			//this.policy.timeout = 85000;
+			// this.policy.timeout = 85000;
 			this.policy.maxThreads = 10;
 			this.policy.maxSocketIdle = 10;
 			this.client = new AerospikeClient(policy, ip, port);
@@ -98,24 +89,29 @@ public class Base {
 	}
 
 	/**
-	 * Method to get node statistics from Aerospike
+	 * Method to get Aerospike nodes from the client.
 	 * 
 	 * @param ip
 	 *            IP of the Aerospike node
-	 * @param port
-	 *            Port number for Aerospike node
-	 * @param user
-	 *            User name for Aerospike node if security enabled else null
-	 * @param password
-	 *            Password for Aerospike node if security enabled else null
+	 * @return Aerospiek Nodes
+	 */
+	public Node[] getAerospikeNodes(String ip) {
+
+		if (this.client == null)
+			return null;
+		return this.client.getNodes();
+	}
+
+	/**
+	 * Method to get node statistics from Aerospike
+	 * 
+	 * @param node
+	 *            Aerospike node
 	 * @return Map<String, String> Map of node statistics
 	 */
-	public Map<String, String> getNodeStatistics(String ip, Integer port, String user, String password) {
+	public Map<String, String> getNodeStatistics(Node node) {
 
 		Map<String, String> nodeStats = null;
-		Node node = null;
-		if (this.client != null)
-			node = getAerospikeNode(ip);
 		if (this.client != null && node != null) {
 			nodeStats = Info.request(null, node);
 			String[] stats = nodeStats.get("statistics").split(";");
@@ -137,21 +133,13 @@ public class Base {
 	 * 
 	 * @param namespace
 	 *            Namespace name
-	 * @param ip
-	 *            IP of Aerospike node
-	 * @param port
-	 *            Port number of Aerospike node
-	 * @param user
-	 *            User name for Aerospike if security enabled else null
-	 * @param password
-	 *            Password for Aerospike if security enabled else null
+	 * @param node
+	 *            Aerospike node
 	 * @return Map<String, String> Map of namespace statistics
 	 */
-	public Map<String, String> getNamespaceStatistics(String namespace, String ip, Integer port, String user,
-			String password) {
+	public Map<String, String> getNamespaceStatistics(String namespace, Node node) {
 
 		Map<String, String> namespaceStats = new HashMap<String, String>();
-		Node node = getAerospikeNode(ip);
 		String filter = "namespace/" + namespace;
 		String[] stats = new String[0];
 		if (node != null) {
@@ -175,20 +163,13 @@ public class Base {
 	/**
 	 * Method to get node latency from Aerospike
 	 * 
-	 * @param ip
-	 *            IP of Aerospike node
-	 * @param port
-	 *            Port number of Aerospike node
-	 * @param user
-	 *            User name for Aerospike node if security enabled else null
-	 * @param password
-	 *            Password for Aerospike node if security enabled else null
-	 * @return
+	 * @param node
+	 *            Aerospike node
+	 * @return Map<String, Map<String, String>> Map of latency stats
 	 */
-	public Map<String, Map<String, String>> getNodeLatency(String ip, Integer port, String user, String password) {
+	public Map<String, Map<String, String>> getNodeLatency(Node node) {
 
 		Map<String, Map<String, String>> latency = new HashMap<String, Map<String, String>>();
-		Node node = getAerospikeNode(ip);
 		String filter = "latency:";
 		String latencyString = "";
 		String[] latencyBuckets = {};
@@ -239,6 +220,7 @@ public class Base {
 			}
 			Float lessThan1Val = opsPerSec * lessThan1 / 100;
 			data.put("\u003C 1ms", String.valueOf(lessThan1Val) + ";" + String.valueOf(lessThan1));
+			data.put("opsPerSec", String.valueOf(opsPerSec));
 			latency.put(key, data);
 		}
 		return latency;
@@ -249,49 +231,51 @@ public class Base {
 	 * 
 	 * @param nodeStats
 	 *            Map of node statistics
+	 * @param node
+	 *            Aerospike node
 	 * @return Map<String, String> Map of node throughput(reads and writes)
 	 */
-	public Map<String, Map<String, String>> getThroughput(Map<String, String> nodeStats) {
+	public Map<String, Map<String, String>> getThroughput(Map<String, String> nodeStats, Node node) {
 
-		String oldReadReqs, oldReadSuccess, oldWriteReqs, oldWriteSuccess, newReadReqs, newReadSuccess, newWriteReqs,
-				newWriteSuccess;
+		String oldReadReqs = "";
+		String oldReadSuccess = "";
+		String oldWriteReqs = "";
+		String oldWriteSuccess = "";
+		String newReadReqs = "";
+		String newReadSuccess = "";
+		String newWriteReqs = "";
+		String newWriteSuccess = "";
 
 		Map<String, String> writeTpsHistory = new HashMap<String, String>();
 		Map<String, String> readTpsHistory = new HashMap<String, String>();
 		Map<String, Map<String, String>> output = new HashMap<String, Map<String, String>>();
-		if (Main.statsHistory.containsKey("stat_read_reqs"))
-			oldReadReqs = Main.statsHistory.get("stat_read_reqs");
-		else
-			oldReadReqs = "";
-		if (Main.statsHistory.containsKey("stat_read_success"))
-			oldReadSuccess = Main.statsHistory.get("stat_read_success");
-		else
-			oldReadSuccess = "";
-		if (Main.statsHistory.containsKey("stat_write_reqs"))
-			oldWriteReqs = Main.statsHistory.get("stat_write_reqs");
-		else
-			oldWriteReqs = "";
-		if (Main.statsHistory.containsKey("stat_write_success"))
-			oldWriteSuccess = Main.statsHistory.get("stat_write_success");
-		else
-			oldWriteSuccess = "";
+
+		if (Main.statsHistory.containsKey(node.getHost().name)) {
+			if (Main.statsHistory.get(node.getHost().name).containsKey("stat_read_reqs"))
+				oldReadReqs = Main.statsHistory.get(node.getHost().name).get("stat_read_reqs");
+
+			if (Main.statsHistory.containsKey("stat_read_success"))
+				oldReadSuccess = Main.statsHistory.get(node.getHost().name).get("stat_read_success");
+
+			if (Main.statsHistory.containsKey("stat_write_reqs"))
+				oldWriteReqs = Main.statsHistory.get(node.getHost().name).get("stat_write_reqs");
+
+			if (Main.statsHistory.containsKey("stat_write_success"))
+				oldWriteSuccess = Main.statsHistory.get(node.getHost().name).get("stat_write_success");
+		}
 
 		if (nodeStats != null && nodeStats.containsKey("stat_read_reqs"))
 			newReadReqs = nodeStats.get("stat_read_reqs");
-		else
-			newReadReqs = "";
+
 		if (nodeStats != null && nodeStats.containsKey("stat_read_success"))
 			newReadSuccess = nodeStats.get("stat_read_success");
-		else
-			newReadSuccess = "";
+
 		if (nodeStats != null && nodeStats.containsKey("stat_write_reqs"))
 			newWriteReqs = nodeStats.get("stat_write_reqs");
-		else
-			newWriteReqs = "";
+
 		if (nodeStats != null && nodeStats.containsKey("stat_write_success"))
 			newWriteSuccess = nodeStats.get("stat_write_success");
-		else
-			newWriteSuccess = "";
+
 		Integer timestamp = Calendar.getInstance().get(Calendar.MILLISECOND);
 
 		boolean writeCondition = newWriteReqs.isEmpty() || newWriteSuccess.isEmpty() || oldWriteReqs.isEmpty()
@@ -302,7 +286,7 @@ public class Base {
 		if (!writeCondition) {
 			Float totalWriteTps = Float.valueOf(newWriteReqs) - Float.valueOf(oldWriteReqs);
 			Float successWriteTps = Float.valueOf(newWriteSuccess) - Float.valueOf(oldWriteSuccess);
-			Integer oldTimestamp = Integer.valueOf(Main.writeTpsHistory.get("x"));
+			Integer oldTimestamp = Integer.valueOf(Main.writeTpsHistory.get(node.getHost().name).get("x"));
 			Integer timeDifference = timestamp - oldTimestamp;
 			totalWriteTps = Math.abs(totalWriteTps / timeDifference);
 			successWriteTps = Math.abs(successWriteTps / timeDifference);
@@ -318,7 +302,7 @@ public class Base {
 		if (!readCondition) {
 			Float totalReadTps = Float.valueOf(newReadReqs) - Float.valueOf(oldReadReqs);
 			Float successReadTps = Float.valueOf(newReadSuccess) - Float.valueOf(oldReadSuccess);
-			Integer oldTimestamp = Integer.valueOf(Main.readTpsHistory.get("x"));
+			Integer oldTimestamp = Integer.valueOf(Main.readTpsHistory.get(node.getHost().name).get("x"));
 			Integer timeDifference = timestamp - oldTimestamp;
 			totalReadTps = Math.abs(totalReadTps / timeDifference);
 			successReadTps = Math.abs(successReadTps / timeDifference);
@@ -330,8 +314,8 @@ public class Base {
 			readTpsHistory.put("secondary", null);
 			readTpsHistory.put("y", null);
 		}
-		Main.setReadTpsHistory(readTpsHistory);
-		Main.setWriteTpsHistory(writeTpsHistory);
+		Main.setReadTpsHistory(readTpsHistory, node);
+		Main.setWriteTpsHistory(writeTpsHistory, node);
 
 		output.put("reads", readTpsHistory);
 		output.put("writes", writeTpsHistory);
@@ -351,7 +335,7 @@ public class Base {
 	 *            Password for Aerospike if security enabled else null
 	 * @return String[] Array of Namespaces
 	 */
-	public String[] getNamespaces(String ip, Integer port, String user, String password) {
+	public String[] getNamespaces(String ip) {
 
 		Node node = getAerospikeNode(ip);
 		String[] namespaces;
@@ -360,8 +344,6 @@ public class Base {
 		if (node != null)
 			ns_str = Info.request(null, node, filter);
 		namespaces = ns_str.split(";");
-		for (String ns : namespaces)
-			getNamespaceStatistics(ns, ip, port, user, password);
 		return namespaces;
 	}
 
