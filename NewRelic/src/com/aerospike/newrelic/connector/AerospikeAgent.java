@@ -6,6 +6,8 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.aerospike.client.AerospikeException;
+import com.aerospike.client.AerospikeException.Connection;
 import com.aerospike.client.cluster.Node;
 import com.aerospike.newrelic.utils.Utils;
 import com.newrelic.metrics.publish.Agent;
@@ -258,7 +260,7 @@ public class AerospikeAgent extends Agent {
 		Node[] nodes = base.getAerospikeNodes(this.host);
 		for (Node node : nodes) {
 			Map<String, String> namespaceStats = base.getNamespaceStatistics(namespace, node);
-			if (namespaceStats != null) {
+			if (namespaceStats != null && namespaceStats.size() != 0) {
 				String namespacePrefix = namespaceBaseMatric + node.getHost().name + SLASH + namespace + SLASH;
 				for (Map.Entry<String, String> stat : namespaceStats.entrySet()) {
 					reportMetric(namespacePrefix + stat.getKey(), "", Float.parseFloat(stat.getValue()));
@@ -273,17 +275,27 @@ public class AerospikeAgent extends Agent {
 	 */
 	@Override
 	public void pollCycle() {
+		try {
+			Map<String, Map<String, String>> perNodeStats = reportNodeStatistics();
+			Main.setStatistcs(perNodeStats);
 
-		Map<String, Map<String, String>> perNodeStats = reportNodeStatistics();
-		Main.setStatistcs(perNodeStats);
+			reportNodeLatency();
+			String[] namespaces = base.getNamespaces(host);
 
-		reportNodeLatency();
-		String[] namespaces = base.getNamespaces(host);
-
-		if (namespaces.length != 0) {
-			for (String namespace : namespaces) {
-				reportNamespaceStats(namespace);
+			if (namespaces.length != 0) {
+				for (String namespace : namespaces) {
+					reportNamespaceStats(namespace);
+				}
 			}
+		} catch (Connection connection) {
+			logger.error("Exception : " + connection.getMessage());
+			System.exit(-1);
+		} catch(AerospikeException aerospikeException){
+			logger.error("Exception : " + aerospikeException.getMessage());
+		}catch(ArrayIndexOutOfBoundsException arrayIndexOutOfBoundsException ){ 
+			logger.info("Server is starting");
+		}catch(Exception exception){
+			logger.error("Exception : " + exception);
 		}
 	}
 }

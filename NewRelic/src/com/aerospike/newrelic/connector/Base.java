@@ -152,9 +152,6 @@ public class Base {
 					namespaceStats.put(pair[0], String.valueOf(val));
 				}
 			}
-
-			namespaceStats.put("used-pct-memory",
-					String.valueOf(100 - Float.parseFloat(namespaceStats.get("free-pct-memory"))));
 			return namespaceStats;
 		}
 		return null;
@@ -337,7 +334,7 @@ public class Base {
 	 */
 	public String[] getNamespaces(String ip) {
 
-		Node node = getAerospikeNode(ip);
+		Node node = getAerospikeNodes(ip)[0];
 		String[] namespaces;
 		String filter = "namespaces";
 		String ns_str = "";
