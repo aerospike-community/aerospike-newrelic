@@ -34,7 +34,7 @@ public class AerospikeAgentFactory extends AgentFactory {
 		/**
 		 * Use pre-defined defaults to simplify configuration
 		 */
-		if (host == null || EMPTY_STRING.equals(host)) {
+		if (host.equals(LOCALHOST) || host == null || EMPTY_STRING.equals(host)) {
 			host = DEFAULT_HOST;
 		}
 

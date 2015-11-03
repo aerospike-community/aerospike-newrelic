@@ -246,19 +246,20 @@ public class Base {
 		Map<String, String> writeTpsHistory = new HashMap<String, String>();
 		Map<String, String> readTpsHistory = new HashMap<String, String>();
 		Map<String, Map<String, String>> output = new HashMap<String, Map<String, String>>();
+		
+		String nodeName = node.getHost().name;
+		if (Main.statsHistory.containsKey(nodeName)) {
+			if (Main.statsHistory.get(nodeName).containsKey("stat_read_reqs"))
+				oldReadReqs = Main.statsHistory.get(nodeName).get("stat_read_reqs");
 
-		if (Main.statsHistory.containsKey(node.getHost().name)) {
-			if (Main.statsHistory.get(node.getHost().name).containsKey("stat_read_reqs"))
-				oldReadReqs = Main.statsHistory.get(node.getHost().name).get("stat_read_reqs");
+			if (Main.statsHistory.get(nodeName).containsKey("stat_read_success"))
+				oldReadSuccess = Main.statsHistory.get(nodeName).get("stat_read_success");
 
-			if (Main.statsHistory.containsKey("stat_read_success"))
-				oldReadSuccess = Main.statsHistory.get(node.getHost().name).get("stat_read_success");
+			if (Main.statsHistory.get(nodeName).containsKey("stat_write_reqs"))
+				oldWriteReqs = Main.statsHistory.get(nodeName).get("stat_write_reqs");
 
-			if (Main.statsHistory.containsKey("stat_write_reqs"))
-				oldWriteReqs = Main.statsHistory.get(node.getHost().name).get("stat_write_reqs");
-
-			if (Main.statsHistory.containsKey("stat_write_success"))
-				oldWriteSuccess = Main.statsHistory.get(node.getHost().name).get("stat_write_success");
+			if (Main.statsHistory.get(nodeName).containsKey("stat_write_success"))
+				oldWriteSuccess = Main.statsHistory.get(nodeName).get("stat_write_success");
 		}
 
 		if (nodeStats != null && nodeStats.containsKey("stat_read_reqs"))
@@ -283,7 +284,7 @@ public class Base {
 		if (!writeCondition) {
 			Float totalWriteTps = Float.valueOf(newWriteReqs) - Float.valueOf(oldWriteReqs);
 			Float successWriteTps = Float.valueOf(newWriteSuccess) - Float.valueOf(oldWriteSuccess);
-			Integer oldTimestamp = Integer.valueOf(Main.writeTpsHistory.get(node.getHost().name).get("x"));
+			Integer oldTimestamp = Integer.valueOf(Main.writeTpsHistory.get(nodeName).get("x"));
 			Integer timeDifference = timestamp - oldTimestamp;
 			totalWriteTps = Math.abs(totalWriteTps / timeDifference);
 			successWriteTps = Math.abs(successWriteTps / timeDifference);
@@ -299,7 +300,7 @@ public class Base {
 		if (!readCondition) {
 			Float totalReadTps = Float.valueOf(newReadReqs) - Float.valueOf(oldReadReqs);
 			Float successReadTps = Float.valueOf(newReadSuccess) - Float.valueOf(oldReadSuccess);
-			Integer oldTimestamp = Integer.valueOf(Main.readTpsHistory.get(node.getHost().name).get("x"));
+			Integer oldTimestamp = Integer.valueOf(Main.readTpsHistory.get(nodeName).get("x"));
 			Integer timeDifference = timestamp - oldTimestamp;
 			totalReadTps = Math.abs(totalReadTps / timeDifference);
 			successReadTps = Math.abs(successReadTps / timeDifference);
