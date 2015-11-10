@@ -31,13 +31,17 @@ public class Constants {
 	public static final String CLUSTER_FALLBACK_NAME = "clusterName";
 
 	public static final String SUMMARY = "summary";
-	public static final String NODE = "node";
-	public static final String THROUGHPUT = "throughput";
+	public static final String NODE_STATS = "nodeStats";
+	public static final String THROUGHPUT_STATS = "throughputStats";
+	public static final String LATENCY_STATS = "latencyStats";
+	public static final String NAMESPACE_STATS = "namespaceStats";
 	public static final String LATENCY = "latency";
-	public static final String NAMESPACE = "namespace";
 	public static final String READS = "reads";
 	public static final String WRITES = "writes";
 
 	public static final String METRIC_BASE_NAME = "aerospike";
+
+	public static final String[] LATENCY_CATEGORY = { "reads", "writes_master", "query", "udf", "proxy" };
+	public static final String[] LATENCY_BUCKETS = { "LT 1ms", "GT 1ms to LT 8ms", "GT 8ms to LT 64ms", "GT 64ms" };
 
 }

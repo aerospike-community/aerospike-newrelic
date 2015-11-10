@@ -205,10 +205,13 @@ public class Base {
 				previousValue = Float.parseFloat(values[j]);
 				String k = "";
 				if (previousKey != "") {
-					// unicode for gt == 0x003E && lt == 0x003C
-					k = "\u003E " + keys[j].substring(1) + " to \u003C " + previousKey.substring(1);
+					/* unicode for gt == 0x003E && lt == 0x003C
+					 * GT - greater than
+					 * LT - less than
+					 */
+					k = "GT " + keys[j].substring(1) + " to LT " + previousKey.substring(1);
 				} else {
-					k = "\u003E " + keys[j].substring(1);
+					k = "GT " + keys[j].substring(1);
 				}
 				previousKey = keys[j];
 				lessThan1 -= pct;
@@ -216,8 +219,8 @@ public class Base {
 				data.put(k, String.valueOf(val) + ";" + String.valueOf(pct));
 			}
 			Float lessThan1Val = opsPerSec * lessThan1 / 100;
-			data.put("\u003C 1ms", String.valueOf(lessThan1Val) + ";" + String.valueOf(lessThan1));
-			data.put("opsPerSec", String.valueOf(opsPerSec));
+			data.put("LT 1ms", String.valueOf(lessThan1Val) + ";" + String.valueOf(lessThan1));
+			//data.put("opsPerSec", String.valueOf(opsPerSec));
 			latency.put(key, data);
 		}
 		return latency;
