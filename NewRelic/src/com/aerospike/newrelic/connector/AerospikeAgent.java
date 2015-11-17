@@ -1,6 +1,19 @@
 package com.aerospike.newrelic.connector;
 
-import static com.aerospike.newrelic.utils.Constants.*;
+import static com.aerospike.newrelic.utils.Constants.CLUSTER_FALLBACK_NAME;
+import static com.aerospike.newrelic.utils.Constants.DEFAULT_PLUGIN_NAME;
+import static com.aerospike.newrelic.utils.Constants.LATENCY;
+import static com.aerospike.newrelic.utils.Constants.LATENCY_BUCKETS;
+import static com.aerospike.newrelic.utils.Constants.LATENCY_CATEGORY;
+import static com.aerospike.newrelic.utils.Constants.LATENCY_STATS;
+import static com.aerospike.newrelic.utils.Constants.METRIC_BASE_NAME;
+import static com.aerospike.newrelic.utils.Constants.NAMESPACE_STATS;
+import static com.aerospike.newrelic.utils.Constants.NODE_STATS;
+import static com.aerospike.newrelic.utils.Constants.READS;
+import static com.aerospike.newrelic.utils.Constants.SLASH;
+import static com.aerospike.newrelic.utils.Constants.SUMMARY;
+import static com.aerospike.newrelic.utils.Constants.THROUGHPUT_STATS;
+import static com.aerospike.newrelic.utils.Constants.WRITES;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -73,10 +86,33 @@ public class AerospikeAgent extends Agent {
 			/* Set default values to readTpsHistory and writeTpsHistory */
 			setDefaultsToTpsHistory();
 
+			logger.info("Aerospike Agent initialized: ", formatAgentParams(host, port, user, password, clusterName));
+
 		} catch (Exception exception) {
 			logger.error("Error reading configuration parameters : ", exception);
 			throw new ConfigurationException("Error reading configuration parameters...", exception);
 		}
+	}
+
+	/**
+	 * Format Agent parameters for logging
+	 * 
+	 * @param clusterName
+	 * @param password
+	 * @param user
+	 * @param port
+	 * @param host
+	 * 
+	 * @return A formatted String representing the Agent parameters
+	 */
+	private String formatAgentParams(String host, String port, String user, String password, String clusterName) {
+		StringBuilder builder = new StringBuilder();
+		builder.append("host: ").append(host).append(" | ");
+		builder.append("port: ").append(port).append(" | ");
+		builder.append("user: ").append(user == null ? "n/a" : user).append(" | ");
+		builder.append("password: ").append(password == null ? "n/a" : password).append(" | ");
+		builder.append("clusterName: ").append(clusterName);
+		return builder.toString();
 	}
 
 	/**
@@ -156,19 +192,19 @@ public class AerospikeAgent extends Agent {
 			Map<String, String> memoryStats = base.getMemoryStats(nodeStats);
 			Map<String, String> diskStats = base.getDiskStats(nodeStats);
 
-			if (Utils.validNumber(diskStats.get("free-bytes-disk")))
+			if (Utils.isValidNumber(diskStats.get("free-bytes-disk")))
 				reportMetric(nodeStatPrefix + node.getHost().name + SLASH + NODE_STATS + "/disk_usage_free", "",
 						Float.parseFloat(diskStats.get("free-bytes-disk")));
 
-			if (Utils.validNumber(diskStats.get("total-bytes-disk")))
+			if (Utils.isValidNumber(diskStats.get("total-bytes-disk")))
 				reportMetric(nodeStatPrefix + node.getHost().name + SLASH + NODE_STATS + "/disk_usage_total", "",
 						Float.parseFloat(diskStats.get("total-bytes-disk")));
 
-			if (Utils.validNumber(memoryStats.get("free-bytes-memory")))
+			if (Utils.isValidNumber(memoryStats.get("free-bytes-memory")))
 				reportMetric(nodeStatPrefix + node.getHost().name + SLASH + NODE_STATS + "/memory_usage_free", "",
 						Float.parseFloat(memoryStats.get("free-bytes-memory")));
 
-			if (Utils.validNumber(memoryStats.get("total-bytes-memory")))
+			if (Utils.isValidNumber(memoryStats.get("total-bytes-memory")))
 				reportMetric(nodeStatPrefix + node.getHost().name + SLASH + NODE_STATS + "/memory_usage_total", "",
 						Float.parseFloat(memoryStats.get("total-bytes-memory")));
 
@@ -315,13 +351,6 @@ public class AerospikeAgent extends Agent {
 			for (Map.Entry<String, Map<String, String>> entry : latency.entrySet()) {
 				String key = entry.getKey();
 				for (Map.Entry<String, String> dataEntry : entry.getValue().entrySet()) {
-					/*
-					 * if (dataEntry.getKey().equals("opsPerSec")) {
-					 * reportMetric(baseLatentyMetric + node.getHost().name +
-					 * SLASH + LATENCY_STATS + SLASH + key + "/" +
-					 * dataEntry.getKey() + "/value", "",
-					 * Float.parseFloat(dataEntry.getValue())); } else {
-					 */
 					reportMetric(
 							baseLatentyMetric + node.getHost().name + SLASH + LATENCY_STATS + SLASH + key + "/"
 									+ dataEntry.getKey() + "/value",
@@ -330,11 +359,12 @@ public class AerospikeAgent extends Agent {
 							baseLatentyMetric + node.getHost().name + SLASH + LATENCY_STATS + SLASH + key + "/"
 									+ dataEntry.getKey() + "/pct",
 							"", Float.parseFloat(dataEntry.getValue().split(";")[1]));
-							/* } */
 
 					/* calculating cluster-wide latency */
+
 					calculateClusterWideLatency(key, dataEntry.getKey(),
 							Float.parseFloat(dataEntry.getValue().split(";")[0]));
+
 				}
 			}
 		}

@@ -118,8 +118,8 @@ public class Base {
 			nodeStats.clear();
 			for (String stat : stats) {
 				String[] pair = stat.split("=");
-				pair[1] = Utils.handleAerospikeString(pair[1]);
-				if (Utils.validNumber(pair[1])) {
+				pair[1] = Utils.transformStringMetric(pair[1]);
+				if (Utils.isValidNumber(pair[1])) {
 					Float val = Float.parseFloat(pair[1]);
 					nodeStats.put(pair[0], String.valueOf(val));
 				}
@@ -146,8 +146,8 @@ public class Base {
 			stats = Info.request(null, node, filter).split(";");
 			for (String stat : stats) {
 				String[] pair = stat.split("=");
-				pair[1] = Utils.handleAerospikeString(pair[1]);
-				if (Utils.validNumber(pair[1])) {
+				pair[1] = Utils.transformStringMetric(pair[1]);
+				if (Utils.isValidNumber(pair[1])) {
 					Float val = Float.parseFloat(pair[1]);
 					namespaceStats.put(pair[0], String.valueOf(val));
 				}
@@ -205,13 +205,20 @@ public class Base {
 				previousValue = Float.parseFloat(values[j]);
 				String k = "";
 				if (previousKey != "") {
-					/* unicode for gt == 0x003E && lt == 0x003C
-					 * GT - greater than
-					 * LT - less than
+					/*
+					 * unicode for gt == 0x003E && lt == 0x003C || GT - greater
+					 * than || LT - less than
 					 */
 					k = "GT " + keys[j].substring(1) + " to LT " + previousKey.substring(1);
+
+					/*
+					 * k = "\u003E " + keys[j].substring(1) + " to \u003C " +
+					 * previousKey.substring(1);
+					 */
 				} else {
 					k = "GT " + keys[j].substring(1);
+
+					/* k = "\u003E " + keys[j].substring(1); */
 				}
 				previousKey = keys[j];
 				lessThan1 -= pct;
@@ -220,7 +227,11 @@ public class Base {
 			}
 			Float lessThan1Val = opsPerSec * lessThan1 / 100;
 			data.put("LT 1ms", String.valueOf(lessThan1Val) + ";" + String.valueOf(lessThan1));
-			//data.put("opsPerSec", String.valueOf(opsPerSec));
+
+			/*
+			 * data.put("\u003C 1ms", String.valueOf(lessThan1Val) + ";" +
+			 * String.valueOf(lessThan1));
+			 */
 			latency.put(key, data);
 		}
 		return latency;
@@ -249,7 +260,7 @@ public class Base {
 		Map<String, String> writeTpsHistory = new HashMap<String, String>();
 		Map<String, String> readTpsHistory = new HashMap<String, String>();
 		Map<String, Map<String, String>> output = new HashMap<String, Map<String, String>>();
-		
+
 		String nodeName = node.getHost().name;
 		if (Main.statsHistory.containsKey(nodeName)) {
 			if (Main.statsHistory.get(nodeName).containsKey("stat_read_reqs"))
