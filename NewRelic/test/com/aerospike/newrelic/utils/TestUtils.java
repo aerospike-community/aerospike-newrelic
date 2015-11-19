@@ -6,6 +6,9 @@ import static com.aerospike.newrelic.utils.Constants.*;
 import org.junit.Test;
 
 public class TestUtils {
+	/**
+	 * method to unit test isValidNumber() of Utils class
+	 */
 	@Test
 	public void testIsValidNumber() {
 		assertEquals(true, Utils.isValidNumber("1.0"));
@@ -13,6 +16,9 @@ public class TestUtils {
 		assertEquals(false, Utils.isValidNumber("true"));
 	}
 
+	/**
+	 * method to unit test transformStringMetric() of Utils class
+	 */
 	@Test
 	public void testTransformStringMetric() {
 		assertEquals(ONE, Utils.transformStringMetric("true"));
@@ -22,6 +28,9 @@ public class TestUtils {
 		assertEquals("10.0", Utils.transformStringMetric("10.0"));
 	}
 
+	/**
+	 * method to unit test validMetricValue() of Utils class
+	 */
 	@Test
 	public void testValidMetricValue() {
 		assertEquals(false, Utils.validMetricValue(null));

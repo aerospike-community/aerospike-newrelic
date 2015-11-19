@@ -1,5 +1,7 @@
 package com.aerospike.newrelic.connector;
 
+import static com.aerospike.newrelic.utils.Constants.LATENCY_ERROR;
+
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
@@ -174,7 +176,7 @@ public class Base {
 		if (node != null)
 			latencyString = Info.request(null, node, filter);
 
-		if (latencyString.length() != 0)
+		if (latencyString.length() != 0 && !latencyString.contains(LATENCY_ERROR))
 			latencyBuckets = latencyString.split(";");
 
 		for (Integer i = 0; i < latencyBuckets.length; i += 2) {
