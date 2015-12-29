@@ -93,11 +93,9 @@ public class Base {
 	/**
 	 * Method to get Aerospike nodes from the client.
 	 * 
-	 * @param ip
-	 *            IP of the Aerospike node
 	 * @return Aerospiek Nodes
 	 */
-	public Node[] getAerospikeNodes(String ip) {
+	public Node[] getAerospikeNodes() {
 
 		if (this.client == null)
 			return null;
@@ -203,32 +201,30 @@ public class Base {
 			else
 				lessThan1 = (float) 100.0;
 			for (Integer j = 0; j < keys.length; j++) {
+/*				Float pct = Float.parseFloat(values[j]);
+				String k = "";
+				k = "GT " + keys[j].substring(1);*/
 				Float pct = Float.parseFloat(values[j]) - previousValue;
 				previousValue = Float.parseFloat(values[j]);
 				String k = "";
 				if (previousKey != "") {
-					/*
-					 * unicode for gt == 0x003E && lt == 0x003C || GT - greater
-					 * than || LT - less than
-					 */
-					k = "GT " + keys[j].substring(1) + " to LT " + previousKey.substring(1);
-
-					/*
-					 * k = "\u003E " + keys[j].substring(1) + " to \u003C " +
-					 * previousKey.substring(1);
-					 */
+					
+					//k = "GT " + keys[j].substring(1) + " to LT " + previousKey.substring(1);
+					k = keys[j].substring(1) +  "_to_" + previousKey.substring(1);
+					 
 				} else {
-					k = "GT " + keys[j].substring(1);
-
-					/* k = "\u003E " + keys[j].substring(1); */
+					
+					k = "GT_" + keys[j].substring(1);
 				}
-				previousKey = keys[j];
+				previousKey = keys[j]; 
+				
 				lessThan1 -= pct;
 				Float val = opsPerSec * pct / 100;
+				//Float val = Float.parseFloat("35000.0");
 				data.put(k, String.valueOf(val) + ";" + String.valueOf(pct));
 			}
 			Float lessThan1Val = opsPerSec * lessThan1 / 100;
-			data.put("LT 1ms", String.valueOf(lessThan1Val) + ";" + String.valueOf(lessThan1));
+			data.put("0ms_to_1ms", String.valueOf(lessThan1Val) + ";" + String.valueOf(lessThan1));
 
 			/*
 			 * data.put("\u003C 1ms", String.valueOf(lessThan1Val) + ";" +
@@ -339,19 +335,11 @@ public class Base {
 	/**
 	 * Method to get namespaces for Aerospike node.
 	 * 
-	 * @param ip
-	 *            IP of Aerospike node
-	 * @param port
-	 *            Port number for Aerospike node
-	 * @param user
-	 *            User name for Aerospike if security enabled else null
-	 * @param password
-	 *            Password for Aerospike if security enabled else null
 	 * @return String[] Array of Namespaces
 	 */
-	public String[] getNamespaces(String ip) {
+	public String[] getNamespaces() {
 
-		Node node = getAerospikeNodes(ip)[0];
+		Node node = getAerospikeNodes()[0];
 		String[] namespaces;
 		String filter = "namespaces";
 		String ns_str = "";

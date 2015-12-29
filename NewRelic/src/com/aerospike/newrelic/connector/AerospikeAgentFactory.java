@@ -42,7 +42,7 @@ public class AerospikeAgentFactory extends AgentFactory {
 			port = DEFAULT_PORT;
 		}
 
-		if (user.equalsIgnoreCase("") || user.equalsIgnoreCase("n/a") || password.equalsIgnoreCase("")
+		if (user == null || user.equalsIgnoreCase("") || user.equalsIgnoreCase("n/a") || password == null || password.equalsIgnoreCase("")
 				|| password.equalsIgnoreCase("n/a")) {
 			user = password = null;
 		}
