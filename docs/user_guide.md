@@ -17,13 +17,13 @@ These include following dashboards.
 	   * Objects
 	   * Basic scan succeeded
 	   * Batch initiate
-	3.	Namespaces : This Dashboard shows per node per namespace stats graph. Added graphs are given below.
-	    * Used memory, disk
-	    * Master, replica objects
-	    * Expired, evicted objects
-	4.	Latency : This Dashboard shows per cluster latency stats graph. Added graphs are given below.
-	    * Read, writes
-	    * UDF, Query, Proxy
+   3. Namespaces : This Dashboard shows per node per namespace stats graph. Added graphs are given below.
+	   * Used memory, disk
+	   * Master, replica objects
+	   * Expired, evicted objects
+   4. Latency : This Dashboard shows per cluster latency stats graph. Added graphs are given below.
+	   * Read, writes
+	   * UDF, Query, Proxy
 	 
 Note :
 	These predefined Dashboards shows all important information. Above it users can add their own custom Dashboard as per requirenment.
@@ -56,31 +56,31 @@ Users can add their own custom charts in these custom dashboards.
 Plugin is used to push metrics in defined hierarchy/categories in order to distinguish stats viz; node, namespace, cluster stats.  
 Categories are :
 
-   1.	Summary : In this category stats per cluster are getting pushed. Metrics are pushed in the following manner
-	    * Component/aerospike/summary/<stat>
-	        * Component/aerospike/summary/cluster_size[]
-	        * Component/aerospike/summary/used_memory[]
-	    * Component/aerospike/summary/<stat category>/<stat>
-	        * Component/aerospike/summary/reads/success[]
-	        * Component/aerospike/summary/writes/success[]
-	    * Component/aerospike/summary/latency/<stat category>/<stat subcategory>/<stat>
+   1. Summary : In this category stats per cluster are getting pushed. Metrics are pushed in the following manner
+	   * Component/aerospike/summary/<stat>
+	       * Component/aerospike/summary/cluster_size[]
+	       * Component/aerospike/summary/used_memory[]
+	   * Component/aerospike/summary/<stat category>/<stat>
+	       * Component/aerospike/summary/reads/success[]
+	       * Component/aerospike/summary/writes/success[]
+	   * Component/aerospike/summary/latency/<stat category>/<stat subcategory>/<stat>
 	       * Component/aerospike/summary/latency/reads/0ms_to_1ms/value[]
 	       * Component/aerospike/summary/latency/udf/0ms_to_1ms/value[]
-	2.	NodeStats: In this category stats per node are getting pushed. Metrics are pushed in the following manner
-	       * Component/aerospike/nodeStats/<Node_IP>/<stat>
-	            * Component/aerospike/nodeStats/<Node_IP>/used-bytes-disk[]
-	       * Component/aerospike/throughputStats/<Node_IP>/<stat>
-	            * Component/aerospike/throughputStats/<Node_IP>/reads/success[] 
-	3.	NamespaceStats: In this category stats per namespace are getting pushed. Metrics are pushed in the following manner
-	    * Component/aerospike/namespaceStats/<Node_IP>/<namespace>/<stat>
-	        * Component/aerospike/namespaceStats/<Node_IP>/<namespace>/used-bytes-memory[]
-	        * Component/aerospike/namespaceStats/<Node_IP>/<namespace>/master-objects[]
-	4.	LatencyStat: In this category latency stats per node are getting pushed. Metrics are pushed in the following manner
-	    * Component/aerospike/latencyStats/<Node_IP>/<stat category>/<stat subcategory>/<stat>
-	        * Component/aerospike/latencyStats/<Node_IP>/writes_master/0ms_to_1ms/value[]
-	5.	ThroughputStat:  In this category throughput stats (reads and writes) per node are getting pushed. Metrics are pushed in the following 
-	    * Component/aerospike/throughputStats/<Node_IP>/<stat category>/<stat>
-	        * Component/aerospike/throughputStats/<Node_IP>/reads/success[]
+   2. NodeStats: In this category stats per node are getting pushed. Metrics are pushed in the following manner
+	   * Component/aerospike/nodeStats/<Node_IP>/<stat>
+	       * Component/aerospike/nodeStats/<Node_IP>/used-bytes-disk[]
+	   * Component/aerospike/throughputStats/<Node_IP>/<stat>
+	       * Component/aerospike/throughputStats/<Node_IP>/reads/success[] 
+   3. NamespaceStats: In this category stats per namespace are getting pushed. Metrics are pushed in the following manner
+	   * Component/aerospike/namespaceStats/<Node_IP>/<namespace>/<stat>
+	       * Component/aerospike/namespaceStats/<Node_IP>/<namespace>/used-bytes-memory[]
+	       * Component/aerospike/namespaceStats/<Node_IP>/<namespace>/master-objects[]
+   4. LatencyStat: In this category latency stats per node are getting pushed. Metrics are pushed in the following manner
+	   * Component/aerospike/latencyStats/<Node_IP>/<stat category>/<stat subcategory>/<stat>
+	       * Component/aerospike/latencyStats/<Node_IP>/writes_master/0ms_to_1ms/value[]
+   5. ThroughputStat:  In this category throughput stats (reads and writes) per node are getting pushed. Metrics are pushed in the following 
+	   * Component/aerospike/throughputStats/<Node_IP>/<stat category>/<stat>
+	       * Component/aerospike/throughputStats/<Node_IP>/reads/success[]
 	        
 Note :
 	User can choose from the above mentioned categories in order to create custom dashboards.
@@ -103,7 +103,7 @@ For example .
 5. Specific namespace stats for all nodes in cluster can be monitored in following way.
 	* Component/aerospike/namespaceStats/*/<namespace>/<stats>
 6. All namespace stats for all nodes in cluster can be monitored in following way.
-	*Component/aerospike/namespaceStats/*/<stats>
+	* Component/aerospike/namespaceStats/*/<stats>
 	
 Note :
 * This wild card can be used once in between and once at the end.
@@ -115,6 +115,6 @@ Note :
     * Component/aerospike/*/<ip>/*/<stat> does not found any matching metric.
 
 ## Limitations
--------------
+--------------
 * At present we don’t push any XDR stats.
 	            
