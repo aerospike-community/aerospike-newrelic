@@ -25,8 +25,13 @@ public class Constants {
 	public static final String ZERO = "0";
 
 	public static final String DEFAULT_PLUGIN_NAME = "Aerospike";
+	
 	public static final String DEFAULT_HOST = "127.0.0.1";
+	public static final String DEFAULT_HOST_PORT = "127.0.0.1:3000";
+	
 	public static final String LOCALHOST = "localhost";
+	public static final String LOCALHOST_PORT = "localhost:3000";
+	
 	public static final String DEFAULT_PORT = "3000";
 	public static final String CLUSTER_FALLBACK_NAME = "clusterName";
 

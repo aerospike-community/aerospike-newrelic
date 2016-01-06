@@ -1,7 +1,11 @@
 package com.aerospike.newrelic.connector;
 
 import static com.aerospike.newrelic.utils.Constants.*;
+
+import java.util.ArrayList;
 import java.util.Map;
+
+import org.json.simple.JSONArray;
 
 import com.newrelic.metrics.publish.Agent;
 import com.newrelic.metrics.publish.AgentFactory;
@@ -27,20 +31,35 @@ public class AerospikeAgentFactory extends AgentFactory {
 
 		String user = (String) properties.get("user");
 		String password = (String) properties.get("password");
-		String host = (String) properties.get("host");
-		String port = (String) properties.get("port");
+		//String host = (String) properties.get("host");
+		//String port = (String) properties.get("port");
+		JSONArray json_seed_list = (JSONArray) properties.get("seed_list");
 		String clusterName = (String) properties.get("clusterName");
-
+		
+		ArrayList<String> seed_list = new ArrayList<String>();     
+		if (json_seed_list != null) { 
+		   for (int i=0; i < json_seed_list.size(); i++){
+			   String host_port = json_seed_list.get(i).toString();
+				if (host_port.equals(LOCALHOST_PORT) || host_port == null || EMPTY_STRING.equals(host_port)) {
+					host_port = DEFAULT_HOST_PORT;
+					seed_list.add(host_port);
+				} else {		   
+					seed_list.add(json_seed_list.get(i).toString());
+				}
+		   } 
+		}
 		/**
 		 * Use pre-defined defaults to simplify configuration
 		 */
+/*			
 		if (host.equals(LOCALHOST) || host == null || EMPTY_STRING.equals(host)) {
 			host = DEFAULT_HOST;
 		}
 
 		if (port == null || EMPTY_STRING.equals(port)) {
 			port = DEFAULT_PORT;
-		}
+		}*/
+
 
 		if (user == null || user.equalsIgnoreCase("") || user.equalsIgnoreCase("n/a") || password == null || password.equalsIgnoreCase("")
 				|| password.equalsIgnoreCase("n/a")) {
@@ -51,7 +70,7 @@ public class AerospikeAgentFactory extends AgentFactory {
 			clusterName = CLUSTER_FALLBACK_NAME;
 		}
 		
-		//creating and returning the AerospikeAgent
-		return new AerospikeAgent(host, port, user, password, clusterName);
+		/* creating and returning the AerospikeAgent */
+		return new AerospikeAgent(seed_list, user, password, clusterName);
 	}
 }

@@ -14,11 +14,12 @@ import static com.aerospike.newrelic.utils.Constants.SLASH;
 import static com.aerospike.newrelic.utils.Constants.SUMMARY;
 import static com.aerospike.newrelic.utils.Constants.THROUGHPUT_STATS;
 import static com.aerospike.newrelic.utils.Constants.WRITES;
-
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.aerospike.client.Host;
 import com.aerospike.client.AerospikeException;
 import com.aerospike.client.AerospikeException.Connection;
 import com.aerospike.client.cluster.Node;
@@ -26,6 +27,7 @@ import com.aerospike.newrelic.utils.Utils;
 import com.newrelic.metrics.publish.Agent;
 import com.newrelic.metrics.publish.configuration.ConfigurationException;
 import com.newrelic.metrics.publish.util.Logger;
+//import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
 
 /**
  * Agent for Aerospike. This agent will log Aerospike statistics, namespace
@@ -40,8 +42,9 @@ public class AerospikeAgent extends Agent {
 
 	private String user;
 	private String password;
-	private String host;
-	private Integer port;
+	private ArrayList<Host> host_list;
+	//private String host;
+	//private Integer port;
 	private String clusterName;
 	private Base base;
 	private String metricBaseName;
@@ -60,18 +63,26 @@ public class AerospikeAgent extends Agent {
 	 * @throws ConfigurationException
 	 *             if error reading configuration parameters.
 	 */
-	public AerospikeAgent(String host, String port, String user, String password, String clusterName)
+	public AerospikeAgent(ArrayList<String> seed_list, String user, String password, String clusterName)
 			throws ConfigurationException {
 		super(GUID, VERSION);
 		try {
-
-			this.host = host;
-			this.port = Integer.parseInt(port);
+			//this.seed_list = seed_list;
+			//this.host = host;
+			//this.port = Integer.parseInt(port);
 			this.user = user;
 			this.password = password;
 			this.clusterName = clusterName;
 			this.metricBaseName = METRIC_BASE_NAME;
-
+			
+			/* creating host list from seed list */
+			this.host_list = new ArrayList<Host>();
+			for (String seed : seed_list) {
+				String[] host_port = seed.split(":");
+				Host host = new Host(host_port[0], Integer.parseInt(host_port[1]));
+				this.host_list.add(host);
+			}
+			
 			/* creating map for cluster-wide reads and writes */
 			totalReadTps = new HashMap<String, Float>();
 			totalWriteTps = new HashMap<String, Float>();
@@ -81,12 +92,15 @@ public class AerospikeAgent extends Agent {
 
 			/* Creating AerospikeClient */
 			this.base = new Base();
-			this.base.createAerospikeClient(this.host, this.port, this.user, this.password);
+			this.base.createAerospikeClient(this.host_list, this.user, this.password);
+			//this.base.createAerospikeClient(this.host, this.port, this.user, this.password);
 
 			/* Set default values to readTpsHistory and writeTpsHistory */
 			setDefaultsToTpsHistory();
 
-			logger.info("Aerospike Agent initialized: ", formatAgentParams(host, port, user, password, clusterName));
+			//logger.info("Aerospike Agent initialized: ", formatAgentParams(host, port, user, password, clusterName));
+			logger.info("Aerospike Agent initialized: ", formatAgentParams(seed_list, user, password, clusterName));
+
 
 		} catch (Exception exception) {
 			logger.error("Error reading configuration parameters : ", exception);
@@ -105,7 +119,7 @@ public class AerospikeAgent extends Agent {
 	 * 
 	 * @return A formatted String representing the Agent parameters
 	 */
-	private String formatAgentParams(String host, String port, String user, String password, String clusterName) {
+/*	private String formatAgentParams(String host, String port, String user, String password, String clusterName) {
 		StringBuilder builder = new StringBuilder();
 		builder.append("host: ").append(host).append(" | ");
 		builder.append("port: ").append(port).append(" | ");
@@ -113,8 +127,18 @@ public class AerospikeAgent extends Agent {
 		builder.append("password: ").append(password == null ? "n/a" : password).append(" | ");
 		builder.append("clusterName: ").append(clusterName);
 		return builder.toString();
+	}*/
+	private String formatAgentParams(ArrayList<String> seed_list, String user, String password, String clusterName) {
+		StringBuilder builder = new StringBuilder();
+/*		builder.append("host: ").append(host).append(" | ");
+		builder.append("port: ").append(port).append(" | ");*/
+		builder.append("seed_list").append(seed_list.toString()).append(" | ");
+		
+		builder.append("user: ").append(user == null ? "n/a" : user).append(" | ");
+		builder.append("password: ").append(password == null ? "n/a" : password).append(" | ");
+		builder.append("clusterName: ").append(clusterName);
+		return builder.toString();
 	}
-
 	/**
 	 * Method to set default values to readTpsHistory and writeTpsHistory
 	 * 
@@ -327,7 +351,9 @@ public class AerospikeAgent extends Agent {
 			Float batchInitiate) {
 		logger.info("Reporting summary metric.");
 		String baseSummaryMetric = METRIC_BASE_NAME + SLASH + SUMMARY + SLASH;
-		Node node = base.getAerospikeNode(host);
+		//Node node = base.getAerospikeNode(host);
+		/* Getting one active node from cluster and getting its stats*/
+		Node node = base.getAerospikeNodes()[0];
 		if (node != null) {
 			Map<String, String> nodeStats = base.getNodeStatistics(node);
 			if (nodeStats != null) {

@@ -2,6 +2,7 @@ package com.aerospike.newrelic.connector;
 
 import static com.aerospike.newrelic.utils.Constants.LATENCY_ERROR;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
@@ -14,7 +15,7 @@ import com.aerospike.client.cluster.Node;
 import com.aerospike.client.policy.ClientPolicy;
 import com.aerospike.newrelic.utils.Utils;
 import com.newrelic.metrics.publish.util.Logger;
-
+import com.aerospike.client.Host;
 /**
  * Base class to communicate with Aerospike.
  * 
@@ -40,7 +41,7 @@ public class Base {
 	 * @param password
 	 *            Password for Aerospike node if if security enabled else null
 	 */
-	public void createAerospikeClient(String ip, Integer port, String user, String password) {
+/*	public void createAerospikeClient(String ip, Integer port, String user, String password) {
 
 		if (this.client == null && this.policy == null) {
 			this.policy = new ClientPolicy();
@@ -52,6 +53,26 @@ public class Base {
 			this.policy.maxThreads = 10;
 			this.policy.maxSocketIdle = 10;
 			this.client = new AerospikeClient(policy, ip, port);
+			if (this.client == null || !this.client.isConnected()) {
+				logger.info("ERROR: "
+						+ "Connection to Aerospike cluster failed! Please check the server settings and try again!");
+			}
+		}
+	}*/
+	
+	public void createAerospikeClient(ArrayList<Host> host_list, String user, String password) {
+		if (this.client == null && this.policy == null) {
+			this.policy = new ClientPolicy();
+			if (user != null && password != null) {
+				this.policy.user = user;
+				this.policy.password = password;
+			}
+			// this.policy.timeout = 85000;
+			this.policy.maxThreads = 10;
+			this.policy.maxSocketIdle = 10;
+			Host []host_array = new Host[host_list.size()];
+			host_list.toArray(host_array);
+			this.client = new AerospikeClient(policy, host_array);
 			if (this.client == null || !this.client.isConnected()) {
 				logger.info("ERROR: "
 						+ "Connection to Aerospike cluster failed! Please check the server settings and try again!");
@@ -298,8 +319,10 @@ public class Base {
 			Float successWriteTps = Float.valueOf(newWriteSuccess) - Float.valueOf(oldWriteSuccess);
 			Integer oldTimestamp = Integer.valueOf(Main.writeTpsHistory.get(nodeName).get("x"));
 			Integer timeDifference = timestamp - oldTimestamp;
-			totalWriteTps = Math.abs(totalWriteTps / timeDifference);
-			successWriteTps = Math.abs(successWriteTps / timeDifference);
+			//totalWriteTps = Math.abs(totalWriteTps / timeDifference);
+			//successWriteTps = Math.abs(successWriteTps / timeDifference);
+			totalWriteTps = Math.abs(totalWriteTps / 60);
+			successWriteTps = Math.abs(successWriteTps / 60);
 			writeTpsHistory.put("x", Integer.toString(timestamp));
 			writeTpsHistory.put("secondary", Integer.toString(Math.round(totalWriteTps)));
 			writeTpsHistory.put("y", Integer.toString(Math.round(successWriteTps)));
@@ -314,8 +337,10 @@ public class Base {
 			Float successReadTps = Float.valueOf(newReadSuccess) - Float.valueOf(oldReadSuccess);
 			Integer oldTimestamp = Integer.valueOf(Main.readTpsHistory.get(nodeName).get("x"));
 			Integer timeDifference = timestamp - oldTimestamp;
-			totalReadTps = Math.abs(totalReadTps / timeDifference);
-			successReadTps = Math.abs(successReadTps / timeDifference);
+			//totalReadTps = Math.abs(totalReadTps / timeDifference);
+			//successReadTps = Math.abs(successReadTps / timeDifference);
+			totalReadTps = Math.abs(totalReadTps / 60);
+			successReadTps = Math.abs(successReadTps / 60);
 			readTpsHistory.put("x", Integer.toString(timestamp));
 			readTpsHistory.put("secondary", Integer.toString(Math.round(totalReadTps)));
 			readTpsHistory.put("y", Integer.toString(Math.round(successReadTps)));

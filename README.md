@@ -3,10 +3,10 @@
 Trend and monitor Aerospike statistics using the New Relic Aerospike plugin. Plugin gathers metrics from your Aerospike and sends the metrics to the New Relic Platform.
 Collection and visualization of various metric from Aerospike includes :
 
+- Overview
 - Node Statistics
-- Latency
 - Namespaces Statistics
-- Throughput
+- Latency
 
 ----
 
@@ -21,6 +21,8 @@ Collection and visualization of various metric from Aerospike includes :
 
 ## Installation
 
+User should install this plugin in one place and monitor the cluster. User doesn't need to install plugin in every node of cluster.
+User has to provide a seed_list of Hosts ["host:port", "host:port"....] in plugin.json file.
 This plugin can be installed one of the following ways:
 
 * [Option 1 - New Relic Platform Installer](#option-1--install-with-the-new-relic-platform-installer)
@@ -79,7 +81,8 @@ You will need to modify two configuration files in order to set this plugin up t
 
 #### Configuring the `plugin.json` file: 
 
-The `plugin.json` file has a provided template in the `config` directory named `plugin.template.json`.  If you are installing manually, make a copy of this template file and rename it to `plugin.json` (the New Relic Platform Installer will automatically handle creation of configuration files for you).  
+The `plugin.json` file has a provided template in the `config` directory named `plugin.template.json`.  If you are installing manually, make a copy of this template file and rename it to `plugin.json` (the New Relic Platform Installer will automatically handle creation of configuration files for you).
+For monitoring multiple clusters just add more configuration objects in agents array.
 
 Below is an example of the `plugin.json` file's contents :
 
@@ -98,7 +101,7 @@ Below is an example of the `plugin.json` file's contents :
 ```
 
 **Note** 
-- If running community/non-secure Aerospike server then use user/password as **n/a** or left blank **""**.
+- If running community/non-secure Aerospike server then use user/password as **n/a** or left blank **""** or remove those fields from pluin.json file.
 
 #### Configuring the `newrelic.json` file: 
 
