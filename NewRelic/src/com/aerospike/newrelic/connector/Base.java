@@ -307,7 +307,7 @@ public class Base {
 		if (nodeStats != null && nodeStats.containsKey("stat_write_success"))
 			newWriteSuccess = nodeStats.get("stat_write_success");
 
-		Integer timestamp = Calendar.getInstance().get(Calendar.MILLISECOND);
+		Integer timestamp = Calendar.getInstance().get(Calendar.MINUTE) * 60 + Calendar.getInstance().get(Calendar.SECOND);
 
 		boolean writeCondition = newWriteReqs.isEmpty() || newWriteSuccess.isEmpty() || oldWriteReqs.isEmpty()
 				|| oldWriteSuccess.isEmpty();
@@ -319,10 +319,10 @@ public class Base {
 			Float successWriteTps = Float.valueOf(newWriteSuccess) - Float.valueOf(oldWriteSuccess);
 			Integer oldTimestamp = Integer.valueOf(Main.writeTpsHistory.get(nodeName).get("x"));
 			Integer timeDifference = timestamp - oldTimestamp;
-			//totalWriteTps = Math.abs(totalWriteTps / timeDifference);
-			//successWriteTps = Math.abs(successWriteTps / timeDifference);
-			totalWriteTps = Math.abs(totalWriteTps / 60);
-			successWriteTps = Math.abs(successWriteTps / 60);
+			totalWriteTps = Math.abs(totalWriteTps / timeDifference);
+			successWriteTps = Math.abs(successWriteTps / timeDifference);
+			//totalWriteTps = Math.abs(totalWriteTps / 60);
+			//successWriteTps = Math.abs(successWriteTps / 60);
 			writeTpsHistory.put("x", Integer.toString(timestamp));
 			writeTpsHistory.put("secondary", Integer.toString(Math.round(totalWriteTps)));
 			writeTpsHistory.put("y", Integer.toString(Math.round(successWriteTps)));
@@ -337,10 +337,10 @@ public class Base {
 			Float successReadTps = Float.valueOf(newReadSuccess) - Float.valueOf(oldReadSuccess);
 			Integer oldTimestamp = Integer.valueOf(Main.readTpsHistory.get(nodeName).get("x"));
 			Integer timeDifference = timestamp - oldTimestamp;
-			//totalReadTps = Math.abs(totalReadTps / timeDifference);
-			//successReadTps = Math.abs(successReadTps / timeDifference);
-			totalReadTps = Math.abs(totalReadTps / 60);
-			successReadTps = Math.abs(successReadTps / 60);
+			totalReadTps = Math.abs(totalReadTps / timeDifference);
+			successReadTps = Math.abs(successReadTps / timeDifference);
+			//totalReadTps = Math.abs(totalReadTps / 60);
+			//successReadTps = Math.abs(successReadTps / 60);
 			readTpsHistory.put("x", Integer.toString(timestamp));
 			readTpsHistory.put("secondary", Integer.toString(Math.round(totalReadTps)));
 			readTpsHistory.put("y", Integer.toString(Math.round(successReadTps)));
