@@ -31,8 +31,6 @@ public class AerospikeAgentFactory extends AgentFactory {
 
 		String user = (String) properties.get("user");
 		String password = (String) properties.get("password");
-		//String host = (String) properties.get("host");
-		//String port = (String) properties.get("port");
 		JSONArray json_seed_list = (JSONArray) properties.get("seed_list");
 		String clusterName = (String) properties.get("clusterName");
 		
@@ -51,15 +49,6 @@ public class AerospikeAgentFactory extends AgentFactory {
 		/**
 		 * Use pre-defined defaults to simplify configuration
 		 */
-/*			
-		if (host.equals(LOCALHOST) || host == null || EMPTY_STRING.equals(host)) {
-			host = DEFAULT_HOST;
-		}
-
-		if (port == null || EMPTY_STRING.equals(port)) {
-			port = DEFAULT_PORT;
-		}*/
-
 
 		if (user == null || user.equalsIgnoreCase("") || user.equalsIgnoreCase("n/a") || password == null || password.equalsIgnoreCase("")
 				|| password.equalsIgnoreCase("n/a")) {

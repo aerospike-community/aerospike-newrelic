@@ -43,8 +43,6 @@ public class AerospikeAgent extends Agent {
 	private String user;
 	private String password;
 	private ArrayList<Host> host_list;
-	//private String host;
-	//private Integer port;
 	private String clusterName;
 	private Base base;
 	private String metricBaseName;
@@ -67,9 +65,6 @@ public class AerospikeAgent extends Agent {
 			throws ConfigurationException {
 		super(GUID, VERSION);
 		try {
-			//this.seed_list = seed_list;
-			//this.host = host;
-			//this.port = Integer.parseInt(port);
 			this.user = user;
 			this.password = password;
 			this.clusterName = clusterName;
@@ -93,7 +88,6 @@ public class AerospikeAgent extends Agent {
 			/* Creating AerospikeClient */
 			this.base = new Base();
 			this.base.createAerospikeClient(this.host_list, this.user, this.password);
-			//this.base.createAerospikeClient(this.host, this.port, this.user, this.password);
 
 			/* Set default values to readTpsHistory and writeTpsHistory */
 			setDefaultsToTpsHistory();
@@ -119,19 +113,9 @@ public class AerospikeAgent extends Agent {
 	 * 
 	 * @return A formatted String representing the Agent parameters
 	 */
-/*	private String formatAgentParams(String host, String port, String user, String password, String clusterName) {
-		StringBuilder builder = new StringBuilder();
-		builder.append("host: ").append(host).append(" | ");
-		builder.append("port: ").append(port).append(" | ");
-		builder.append("user: ").append(user == null ? "n/a" : user).append(" | ");
-		builder.append("password: ").append(password == null ? "n/a" : password).append(" | ");
-		builder.append("clusterName: ").append(clusterName);
-		return builder.toString();
-	}*/
+
 	private String formatAgentParams(ArrayList<String> seed_list, String user, String password, String clusterName) {
 		StringBuilder builder = new StringBuilder();
-/*		builder.append("host: ").append(host).append(" | ");
-		builder.append("port: ").append(port).append(" | ");*/
 		builder.append("seed_list").append(seed_list.toString()).append(" | ");
 		
 		builder.append("user: ").append(user == null ? "n/a" : user).append(" | ");
@@ -144,21 +128,21 @@ public class AerospikeAgent extends Agent {
 	 * 
 	 */
 	public void setDefaultsToTpsHistory() {
-		Integer timeStamp = (int) Calendar.getInstance().get(Calendar.MILLISECOND);
+		Long timeStamp = System.currentTimeMillis() / 1000l;
 		Node[] nodes = base.getAerospikeNodes();
 
 		for (Node node : nodes) {
 			Map<String, String> readTpsHistory = new HashMap<String, String>();
-			readTpsHistory.put("x", Integer.toString(timeStamp));
-			readTpsHistory.put("y", null);
-			readTpsHistory.put("secondary", null);
+			readTpsHistory.put("timeStamp", Long.toString(timeStamp));
+			readTpsHistory.put("totalTps", null);
+			readTpsHistory.put("successTps", null);
 
 			Main.readTpsHistory.put(node.getHost().name, readTpsHistory);
 
 			Map<String, String> writeTpsHistory = new HashMap<String, String>();
-			writeTpsHistory.put("x", Integer.toString(timeStamp));
-			writeTpsHistory.put("y", null);
-			writeTpsHistory.put("secondary", null);
+			writeTpsHistory.put("timeStamp", Long.toString(timeStamp));
+			writeTpsHistory.put("totalTps", null);
+			writeTpsHistory.put("successTps", null);
 
 			Main.readTpsHistory.put(node.getHost().name, writeTpsHistory);
 		}
@@ -263,12 +247,12 @@ public class AerospikeAgent extends Agent {
 	 */
 	public void initTps() {
 		totalReadTps.clear();
-		totalReadTps.put("y", (float) 0);
-		totalReadTps.put("secondary", (float) 0);
+		totalReadTps.put("successTps", (float) 0);
+		totalReadTps.put("totalTps", (float) 0);
 
 		totalWriteTps.clear();
-		totalWriteTps.put("y", (float) 0);
-		totalWriteTps.put("secondary", (float) 0);
+		totalWriteTps.put("successTps", (float) 0);
+		totalWriteTps.put("totalTps", (float) 0);
 	}
 
 	/**
@@ -286,53 +270,53 @@ public class AerospikeAgent extends Agent {
 		String baseThroughputMetric = metricBaseName + SLASH + THROUGHPUT_STATS + SLASH;
 		if (readTps != null) {
 			String read_metric_prefix = baseThroughputMetric + node.getHost().name + SLASH + READS + SLASH;
-			if (readTps.get("y") == null) {
-				totalReadTps.put("y", (float) 0);
+			if (readTps.get("successTps") == null) {
+				totalReadTps.put("successTps", (float) 0);
 				reportMetric(read_metric_prefix + "success", "", 0);
 				logger.info("Reprting metics, metric name: " + read_metric_prefix + "success" + ", value: " + 0);
 
 			} else {
-				totalReadTps.put("y", totalReadTps.get("y") + Integer.valueOf(readTps.get("y")));
-				reportMetric(read_metric_prefix + "success", "", Integer.valueOf(readTps.get("y")));
-				logger.info("Reprting metics, metric name: " + read_metric_prefix + "success" + ", value: " + Integer.valueOf(readTps.get("y")));
+				totalReadTps.put("successTps", totalReadTps.get("successTps") + Integer.valueOf(readTps.get("successTps")));
+				reportMetric(read_metric_prefix + "success", "", Integer.valueOf(readTps.get("successTps")));
+				logger.info("Reprting metics, metric name: " + read_metric_prefix + "success" + ", value: " + Integer.valueOf(readTps.get("successTps")));
 				
 			}
 			
-			if (readTps.get("secondary") == null) {
-				totalReadTps.put("secondary", (float) 0);
+			if (readTps.get("totalTps") == null) {
+				totalReadTps.put("totalTps", (float) 0);
 				reportMetric(read_metric_prefix + "total", "", 0);
 				logger.info("Reprting metics, metric name: " + read_metric_prefix + "total" + ", value: " + 0);
 
 			} else {
-				totalReadTps.put("secondary", totalReadTps.get("secondary") + Integer.valueOf(readTps.get("secondary")));
-				reportMetric(read_metric_prefix + "total", "", Integer.valueOf(readTps.get("secondary")));
-				logger.info("Reprting metics, metric name: " + read_metric_prefix + "total" + ", value: " + Integer.valueOf(readTps.get("secondary")));
+				totalReadTps.put("totalTps", totalReadTps.get("totalTps") + Integer.valueOf(readTps.get("totalTps")));
+				reportMetric(read_metric_prefix + "total", "", Integer.valueOf(readTps.get("totalTps")));
+				logger.info("Reprting metics, metric name: " + read_metric_prefix + "total" + ", value: " + Integer.valueOf(readTps.get("totalTps")));
 
 			}
 		}
 
 		if (writeTps != null) {
 			String write_metric_name = baseThroughputMetric + node.getHost().name + SLASH + WRITES + SLASH;
-			if (writeTps.get("y") == null) {
-				totalWriteTps.put("y", (float) 0);
+			if (writeTps.get("successTps") == null) {
+				totalWriteTps.put("successTps", (float) 0);
 				reportMetric(write_metric_name + "success", "", 0);
 				logger.info("Reprting metics, metric name: " + write_metric_name + "success" + ", value: " + 0);
 
 			} else {
-				totalWriteTps.put("y", totalWriteTps.get("y") + Integer.valueOf(writeTps.get("y")));
-				reportMetric(write_metric_name + "success", "", Integer.valueOf(writeTps.get("y")));
-				logger.info("Reprting metics, metric name: " + write_metric_name + "success" + ", value: " + Integer.valueOf(writeTps.get("y")));
+				totalWriteTps.put("successTps", totalWriteTps.get("successTps") + Integer.valueOf(writeTps.get("successTps")));
+				reportMetric(write_metric_name + "success", "", Integer.valueOf(writeTps.get("successTps")));
+				logger.info("Reprting metics, metric name: " + write_metric_name + "success" + ", value: " + Integer.valueOf(writeTps.get("successTps")));
 
 			}
-			if (writeTps.get("secondary") == null) {
-				totalWriteTps.put("secondary", (float) 0);
+			if (writeTps.get("totalTps") == null) {
+				totalWriteTps.put("totalTps", (float) 0);
 				reportMetric(write_metric_name + "total", "", 0);
 				logger.info("Reprting metics, metric name: " + write_metric_name + "total" + ", value: " + 0);
 
 			} else {
-				totalWriteTps.put("secondary",totalWriteTps.get("secondary") + Integer.valueOf(writeTps.get("secondary")));
-				reportMetric(write_metric_name + "total", "", Integer.valueOf(writeTps.get("secondary")));
-				logger.info("Reprting metics, metric name: " + write_metric_name + "total" + ", value: " + Integer.valueOf(writeTps.get("secondary")));
+				totalWriteTps.put("totalTps",totalWriteTps.get("totalTps") + Integer.valueOf(writeTps.get("totalTps")));
+				reportMetric(write_metric_name + "total", "", Integer.valueOf(writeTps.get("totalTps")));
+				logger.info("Reprting metics, metric name: " + write_metric_name + "total" + ", value: " + Integer.valueOf(writeTps.get("totalTps")));
 
 			}
 		}
@@ -351,7 +335,6 @@ public class AerospikeAgent extends Agent {
 			Float batchInitiate) {
 		logger.info("Reporting summary metric.");
 		String baseSummaryMetric = METRIC_BASE_NAME + SLASH + SUMMARY + SLASH;
-		//Node node = base.getAerospikeNode(host);
 		/* Getting one active node from cluster and getting its stats*/
 		Node node = base.getAerospikeNodes()[0];
 		if (node != null) {
@@ -389,17 +372,17 @@ public class AerospikeAgent extends Agent {
 		String read_metric = baseThroughputMetric + READS + SLASH;
 		String write_metric = baseThroughputMetric + WRITES + SLASH;
 		
-		reportMetric(read_metric + "success", "", totalReadTps.get("y"));
-		logger.info("Reprting metics, metric name: " + read_metric + ", value: " + totalReadTps.get("y"));
+		reportMetric(read_metric + "success", "", totalReadTps.get("successTps"));
+		logger.info("Reprting metics, metric name: " + read_metric + ", value: " + totalReadTps.get("successTps"));
 
-		reportMetric(read_metric + "total", "", totalReadTps.get("secondary"));
-		logger.info("Reprting metics, metric name: " + read_metric + ", value: " + totalReadTps.get("secondary"));
+		reportMetric(read_metric + "total", "", totalReadTps.get("totalTps"));
+		logger.info("Reprting metics, metric name: " + read_metric + ", value: " + totalReadTps.get("totalTps"));
 
-		reportMetric(write_metric + "success", "", totalWriteTps.get("y"));
-		logger.info("Reprting metics, metric name: " + write_metric + ", value: " + totalWriteTps.get("y"));
+		reportMetric(write_metric + "success", "", totalWriteTps.get("successTps"));
+		logger.info("Reprting metics, metric name: " + write_metric + ", value: " + totalWriteTps.get("successTps"));
 
-		reportMetric(write_metric + "total", "", totalWriteTps.get("secondary"));
-		logger.info("Reprting metics, metric name: " + write_metric + ", value: " + totalWriteTps.get("secondary"));
+		reportMetric(write_metric + "total", "", totalWriteTps.get("totalTps"));
+		logger.info("Reprting metics, metric name: " + write_metric + ", value: " + totalWriteTps.get("totalTps"));
 
 	}
 

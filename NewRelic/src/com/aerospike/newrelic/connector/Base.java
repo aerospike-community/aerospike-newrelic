@@ -41,24 +41,6 @@ public class Base {
 	 * @param password
 	 *            Password for Aerospike node if if security enabled else null
 	 */
-/*	public void createAerospikeClient(String ip, Integer port, String user, String password) {
-
-		if (this.client == null && this.policy == null) {
-			this.policy = new ClientPolicy();
-			if (user != null && password != null) {
-				this.policy.user = user;
-				this.policy.password = password;
-			}
-			// this.policy.timeout = 85000;
-			this.policy.maxThreads = 10;
-			this.policy.maxSocketIdle = 10;
-			this.client = new AerospikeClient(policy, ip, port);
-			if (this.client == null || !this.client.isConnected()) {
-				logger.info("ERROR: "
-						+ "Connection to Aerospike cluster failed! Please check the server settings and try again!");
-			}
-		}
-	}*/
 	
 	public void createAerospikeClient(ArrayList<Host> host_list, String user, String password) {
 		if (this.client == null && this.policy == null) {
@@ -222,15 +204,11 @@ public class Base {
 			else
 				lessThan1 = (float) 100.0;
 			for (Integer j = 0; j < keys.length; j++) {
-/*				Float pct = Float.parseFloat(values[j]);
-				String k = "";
-				k = "GT " + keys[j].substring(1);*/
 				Float pct = Float.parseFloat(values[j]) - previousValue;
 				previousValue = Float.parseFloat(values[j]);
 				String k = "";
 				if (previousKey != "") {
 					
-					//k = "GT " + keys[j].substring(1) + " to LT " + previousKey.substring(1);
 					k = keys[j].substring(1) +  "_to_" + previousKey.substring(1);
 					 
 				} else {
@@ -307,7 +285,8 @@ public class Base {
 		if (nodeStats != null && nodeStats.containsKey("stat_write_success"))
 			newWriteSuccess = nodeStats.get("stat_write_success");
 
-		Integer timestamp = Calendar.getInstance().get(Calendar.MINUTE) * 60 + Calendar.getInstance().get(Calendar.SECOND);
+		//Integer timestamp = Calendar.getInstance().get(Calendar.MINUTE) * 60 + Calendar.getInstance().get(Calendar.SECOND);
+		Long timeStamp = System.currentTimeMillis() / 1000l;
 
 		boolean writeCondition = newWriteReqs.isEmpty() || newWriteSuccess.isEmpty() || oldWriteReqs.isEmpty()
 				|| oldWriteSuccess.isEmpty();
@@ -317,37 +296,33 @@ public class Base {
 		if (!writeCondition) {
 			Float totalWriteTps = Float.valueOf(newWriteReqs) - Float.valueOf(oldWriteReqs);
 			Float successWriteTps = Float.valueOf(newWriteSuccess) - Float.valueOf(oldWriteSuccess);
-			Integer oldTimestamp = Integer.valueOf(Main.writeTpsHistory.get(nodeName).get("x"));
-			Integer timeDifference = timestamp - oldTimestamp;
+			Long oldTimestamp = Long.valueOf(Main.writeTpsHistory.get(nodeName).get("timeStamp"));
+			Long timeDifference = timeStamp - oldTimestamp;
 			totalWriteTps = Math.abs(totalWriteTps / timeDifference);
 			successWriteTps = Math.abs(successWriteTps / timeDifference);
-			//totalWriteTps = Math.abs(totalWriteTps / 60);
-			//successWriteTps = Math.abs(successWriteTps / 60);
-			writeTpsHistory.put("x", Integer.toString(timestamp));
-			writeTpsHistory.put("secondary", Integer.toString(Math.round(totalWriteTps)));
-			writeTpsHistory.put("y", Integer.toString(Math.round(successWriteTps)));
+			writeTpsHistory.put("timeStamp", Long.toString(timeStamp));
+			writeTpsHistory.put("totalTps", Integer.toString(Math.round(totalWriteTps)));
+			writeTpsHistory.put("successTps", Integer.toString(Math.round(successWriteTps)));
 		} else {
-			writeTpsHistory.put("x", Integer.toString(timestamp));
-			writeTpsHistory.put("secondary", null);
-			writeTpsHistory.put("y", null);
+			writeTpsHistory.put("timeStamp", Long.toString(timeStamp));
+			writeTpsHistory.put("totalTps", null);
+			writeTpsHistory.put("successTps", null);
 		}
 
 		if (!readCondition) {
 			Float totalReadTps = Float.valueOf(newReadReqs) - Float.valueOf(oldReadReqs);
 			Float successReadTps = Float.valueOf(newReadSuccess) - Float.valueOf(oldReadSuccess);
-			Integer oldTimestamp = Integer.valueOf(Main.readTpsHistory.get(nodeName).get("x"));
-			Integer timeDifference = timestamp - oldTimestamp;
+			Long oldTimestamp = Long.valueOf(Main.readTpsHistory.get(nodeName).get("timeStamp"));
+			Long timeDifference = timeStamp - oldTimestamp;
 			totalReadTps = Math.abs(totalReadTps / timeDifference);
 			successReadTps = Math.abs(successReadTps / timeDifference);
-			//totalReadTps = Math.abs(totalReadTps / 60);
-			//successReadTps = Math.abs(successReadTps / 60);
-			readTpsHistory.put("x", Integer.toString(timestamp));
-			readTpsHistory.put("secondary", Integer.toString(Math.round(totalReadTps)));
-			readTpsHistory.put("y", Integer.toString(Math.round(successReadTps)));
+			readTpsHistory.put("timeStamp", Long.toString(timeStamp));
+			readTpsHistory.put("totalTps", Integer.toString(Math.round(totalReadTps)));
+			readTpsHistory.put("successTps", Integer.toString(Math.round(successReadTps)));
 		} else {
-			readTpsHistory.put("x", Integer.toString(timestamp));
-			readTpsHistory.put("secondary", null);
-			readTpsHistory.put("y", null);
+			readTpsHistory.put("timeStamp", Long.toString(timeStamp));
+			readTpsHistory.put("totalTps", null);
+			readTpsHistory.put("successTps", null);
 		}
 		Main.setReadTpsHistory(readTpsHistory, node);
 		Main.setWriteTpsHistory(writeTpsHistory, node);
