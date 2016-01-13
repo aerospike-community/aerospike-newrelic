@@ -1,8 +1,7 @@
 {
   "agents": [
   	{
-      "host" : "HOST IP",
-      "port" : "3000",
+      "seed_list" : ["host:port", "host,port"....],
       "user" : "USERNAME",
       "password" : "PASSWORD",
       "clusterName" : "CLUSTER NAME"
