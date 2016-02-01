@@ -52,6 +52,7 @@ public class AerospikeAgent extends Agent {
 	Map<String, Map<String, Float>> clusterWideLatency;
 
 	private static final Logger logger = Logger.getLogger(AerospikeAgent.class);
+	
 
 	/**
 	 * Constructor for Aerospike Agent
@@ -164,7 +165,7 @@ public class AerospikeAgent extends Agent {
 	 * @return Map<String, String> A map of node statistics
 	 */
 	public Map<String, Map<String, String>> reportNodeStatistics() {
-		logger.info("Reporting node stats.");
+		logger.debug("Reporting node stats.");
 		
 		String nodeStatPrefix = metricBaseName + SLASH + NODE_STATS + SLASH;
 		Map<String, Map<String, String>> perNodeStats = new HashMap<String, Map<String, String>>();
@@ -192,7 +193,7 @@ public class AerospikeAgent extends Agent {
 					String metric_name = nodeStatPrefix + node.getHost().name + SLASH + nodeStat.getKey();
 					float value = Float.parseFloat(nodeStat.getValue());
 					reportMetric(metric_name, "", value);
-					logger.info("Reprting metics, metric name: " + metric_name + ", value: " + value);
+					logger.debug("Reprting metics, metric name: " + metric_name + ", value: " + value);
 				}
 			}
 
@@ -203,28 +204,28 @@ public class AerospikeAgent extends Agent {
 				String metric_name = nodeStatPrefix + node.getHost().name + "/free-bytes-disk";
 				float value = Float.parseFloat(diskStats.get("free-bytes-disk"));
 				reportMetric(metric_name, "", value);
-				logger.info("Reprting metics, metric name: " + metric_name + ", value: " + value);
+				logger.debug("Reprting metics, metric name: " + metric_name + ", value: " + value);
 			}
 
 			if (Utils.isValidNumber(diskStats.get("total-bytes-disk"))) {
 				String metric_name = nodeStatPrefix + node.getHost().name + "/total-bytes-disk";
 				float value = Float.parseFloat(diskStats.get("total-bytes-disk"));
 				reportMetric(metric_name, "", value);
-				logger.info("Reprting metics, metric name: " + metric_name + ", value: " + value);
+				logger.debug("Reprting metics, metric name: " + metric_name + ", value: " + value);
 			}
 
 			if (Utils.isValidNumber(memoryStats.get("free-bytes-memory"))) {
 				String metric_name = nodeStatPrefix + node.getHost().name + "/free-bytes-memory";
 				float value = Float.parseFloat(memoryStats.get("free-bytes-memory"));
 				reportMetric(metric_name, "", value);
-				logger.info("Reprting metics, metric name: " + metric_name + ", value: " + value);
+				logger.debug("Reprting metics, metric name: " + metric_name + ", value: " + value);
 			}
 
 			if (Utils.isValidNumber(memoryStats.get("total-bytes-memory"))) {
 				String metric_name = nodeStatPrefix + node.getHost().name + "/total-bytes-memory";
 				float value = Float.parseFloat(memoryStats.get("total-bytes-memory"));
 				reportMetric(metric_name, "", value);
-				logger.info("Reprting metics, metric name: " + metric_name + ", value: " + value);
+				logger.debug("Reprting metics, metric name: " + metric_name + ", value: " + value);
 			}
 
 			perNodeStats.put(node.getHost().name, nodeStats);
@@ -262,7 +263,7 @@ public class AerospikeAgent extends Agent {
 	 *            Map of node statistics
 	 */
 	public void reportThroughput(Map<String, String> nodeStats, Node node) {
-		logger.info("Report node throughput.");
+		logger.debug("Report node throughput.");
 		Map<String, Map<String, String>> tps = base.getThroughput(nodeStats, node);
 		Map<String, String> readTps = tps.get("reads");
 		Map<String, String> writeTps = tps.get("writes");
@@ -273,24 +274,24 @@ public class AerospikeAgent extends Agent {
 			if (readTps.get("successTps") == null) {
 				totalReadTps.put("successTps", (float) 0);
 				reportMetric(read_metric_prefix + "success", "", 0);
-				logger.info("Reprting metics, metric name: " + read_metric_prefix + "success" + ", value: " + 0);
+				logger.debug("Reprting metics, metric name: " + read_metric_prefix + "success" + ", value: " + 0);
 
 			} else {
 				totalReadTps.put("successTps", totalReadTps.get("successTps") + Integer.valueOf(readTps.get("successTps")));
 				reportMetric(read_metric_prefix + "success", "", Integer.valueOf(readTps.get("successTps")));
-				logger.info("Reprting metics, metric name: " + read_metric_prefix + "success" + ", value: " + Integer.valueOf(readTps.get("successTps")));
+				logger.debug("Reprting metics, metric name: " + read_metric_prefix + "success" + ", value: " + Integer.valueOf(readTps.get("successTps")));
 				
 			}
 			
 			if (readTps.get("totalTps") == null) {
 				totalReadTps.put("totalTps", (float) 0);
 				reportMetric(read_metric_prefix + "total", "", 0);
-				logger.info("Reprting metics, metric name: " + read_metric_prefix + "total" + ", value: " + 0);
+				logger.debug("Reprting metics, metric name: " + read_metric_prefix + "total" + ", value: " + 0);
 
 			} else {
 				totalReadTps.put("totalTps", totalReadTps.get("totalTps") + Integer.valueOf(readTps.get("totalTps")));
 				reportMetric(read_metric_prefix + "total", "", Integer.valueOf(readTps.get("totalTps")));
-				logger.info("Reprting metics, metric name: " + read_metric_prefix + "total" + ", value: " + Integer.valueOf(readTps.get("totalTps")));
+				logger.debug("Reprting metics, metric name: " + read_metric_prefix + "total" + ", value: " + Integer.valueOf(readTps.get("totalTps")));
 
 			}
 		}
@@ -300,23 +301,23 @@ public class AerospikeAgent extends Agent {
 			if (writeTps.get("successTps") == null) {
 				totalWriteTps.put("successTps", (float) 0);
 				reportMetric(write_metric_name + "success", "", 0);
-				logger.info("Reprting metics, metric name: " + write_metric_name + "success" + ", value: " + 0);
+				logger.debug("Reprting metics, metric name: " + write_metric_name + "success" + ", value: " + 0);
 
 			} else {
 				totalWriteTps.put("successTps", totalWriteTps.get("successTps") + Integer.valueOf(writeTps.get("successTps")));
 				reportMetric(write_metric_name + "success", "", Integer.valueOf(writeTps.get("successTps")));
-				logger.info("Reprting metics, metric name: " + write_metric_name + "success" + ", value: " + Integer.valueOf(writeTps.get("successTps")));
+				logger.debug("Reprting metics, metric name: " + write_metric_name + "success" + ", value: " + Integer.valueOf(writeTps.get("successTps")));
 
 			}
 			if (writeTps.get("totalTps") == null) {
 				totalWriteTps.put("totalTps", (float) 0);
 				reportMetric(write_metric_name + "total", "", 0);
-				logger.info("Reprting metics, metric name: " + write_metric_name + "total" + ", value: " + 0);
+				logger.debug("Reprting metics, metric name: " + write_metric_name + "total" + ", value: " + 0);
 
 			} else {
 				totalWriteTps.put("totalTps",totalWriteTps.get("totalTps") + Integer.valueOf(writeTps.get("totalTps")));
 				reportMetric(write_metric_name + "total", "", Integer.valueOf(writeTps.get("totalTps")));
-				logger.info("Reprting metics, metric name: " + write_metric_name + "total" + ", value: " + Integer.valueOf(writeTps.get("totalTps")));
+				logger.debug("Reprting metics, metric name: " + write_metric_name + "total" + ", value: " + Integer.valueOf(writeTps.get("totalTps")));
 
 			}
 		}
@@ -333,7 +334,7 @@ public class AerospikeAgent extends Agent {
 	 */
 	public void reportSummaryMetric(Float totalUsedMemory, Float totalMemory, Float totalUsedDisk, Float totalDisk,
 			Float batchInitiate) {
-		logger.info("Reporting summary metric.");
+		logger.debug("Reporting summary metric.");
 		String baseSummaryMetric = METRIC_BASE_NAME + SLASH + SUMMARY + SLASH;
 		/* Getting one active node from cluster and getting its stats*/
 		Node node = base.getAerospikeNodes()[0];
@@ -341,24 +342,24 @@ public class AerospikeAgent extends Agent {
 			Map<String, String> nodeStats = base.getNodeStatistics(node);
 			if (nodeStats != null) {
 				reportMetric(baseSummaryMetric + "cluster_size", "", Float.parseFloat(nodeStats.get("cluster_size")));
-				logger.info("Reprting metics, metric name: " + baseSummaryMetric + "cluster_size" + ", value: " + Float.parseFloat(nodeStats.get("cluster_size")));
+				logger.debug("Reprting metics, metric name: " + baseSummaryMetric + "cluster_size" + ", value: " + Float.parseFloat(nodeStats.get("cluster_size")));
 			}
 		}
 
 		reportMetric(baseSummaryMetric + "used_memory", "", totalUsedMemory);
-		logger.info("Reprting metics, metric name: " + baseSummaryMetric + "used_memory" + ", value: " + totalUsedMemory);
+		logger.debug("Reprting metics, metric name: " + baseSummaryMetric + "used_memory" + ", value: " + totalUsedMemory);
 
 		reportMetric(baseSummaryMetric + "total_memory", "", totalMemory);
-		logger.info("Reprting metics, metric name: " + baseSummaryMetric + "total_memory" + ", value: " + totalMemory);
+		logger.debug("Reprting metics, metric name: " + baseSummaryMetric + "total_memory" + ", value: " + totalMemory);
 
 		reportMetric(baseSummaryMetric + "used_disk", "", totalUsedDisk);
-		logger.info("Reprting metics, metric name: " + baseSummaryMetric + "used_disk" + ", value: " + totalUsedDisk);
+		logger.debug("Reprting metics, metric name: " + baseSummaryMetric + "used_disk" + ", value: " + totalUsedDisk);
 		
 		reportMetric(baseSummaryMetric + "total_disk", "", totalDisk);
-		logger.info("Reprting metics, metric name: " + baseSummaryMetric + "total_disk" + ", value: " + totalDisk);
+		logger.debug("Reprting metics, metric name: " + baseSummaryMetric + "total_disk" + ", value: " + totalDisk);
 
 		reportMetric(baseSummaryMetric + "batch_initiate", "", batchInitiate);
-		logger.info("Reprting metics, metric name: " + baseSummaryMetric + "batch_initiate" + ", value: " + batchInitiate);
+		logger.debug("Reprting metics, metric name: " + baseSummaryMetric + "batch_initiate" + ", value: " + batchInitiate);
 
 	}
 
@@ -367,22 +368,22 @@ public class AerospikeAgent extends Agent {
 	 * 
 	 */
 	public void reportTotalTps() {
-		logger.info("Report total tps.");
+		logger.debug("Report total tps.");
 		String baseThroughputMetric = METRIC_BASE_NAME + SLASH + SUMMARY + SLASH;
 		String read_metric = baseThroughputMetric + READS + SLASH;
 		String write_metric = baseThroughputMetric + WRITES + SLASH;
 		
 		reportMetric(read_metric + "success", "", totalReadTps.get("successTps"));
-		logger.info("Reprting metics, metric name: " + read_metric + ", value: " + totalReadTps.get("successTps"));
+		logger.debug("Reprting metics, metric name: " + read_metric + ", value: " + totalReadTps.get("successTps"));
 
 		reportMetric(read_metric + "total", "", totalReadTps.get("totalTps"));
-		logger.info("Reprting metics, metric name: " + read_metric + ", value: " + totalReadTps.get("totalTps"));
+		logger.debug("Reprting metics, metric name: " + read_metric + ", value: " + totalReadTps.get("totalTps"));
 
 		reportMetric(write_metric + "success", "", totalWriteTps.get("successTps"));
-		logger.info("Reprting metics, metric name: " + write_metric + ", value: " + totalWriteTps.get("successTps"));
+		logger.debug("Reprting metics, metric name: " + write_metric + ", value: " + totalWriteTps.get("successTps"));
 
 		reportMetric(write_metric + "total", "", totalWriteTps.get("totalTps"));
-		logger.info("Reprting metics, metric name: " + write_metric + ", value: " + totalWriteTps.get("totalTps"));
+		logger.debug("Reprting metics, metric name: " + write_metric + ", value: " + totalWriteTps.get("totalTps"));
 
 	}
 
@@ -391,7 +392,7 @@ public class AerospikeAgent extends Agent {
 	 * query.
 	 */
 	public void reportNodeLatency() {
-		logger.info("Reporting node latency.");
+		logger.debug("Reporting node latency.");
 		String baseLatentyMetric = metricBaseName + SLASH + LATENCY_STATS + SLASH;
 		/* setting default values to cluster-wide latency map */
 		initClusterWideLatency();
@@ -407,10 +408,10 @@ public class AerospikeAgent extends Agent {
 					float metric_pct = Float.parseFloat(dataEntry.getValue().split(";")[1]);
 					
 					reportMetric(metric_name_prefix + "/value", "", metric_value);
-					logger.info("Reprting metics, metric name: " + metric_name_prefix + "/value" + ", value: " + metric_value);
+					logger.debug("Reprting metics, metric name: " + metric_name_prefix + "/value" + ", value: " + metric_value);
 
 					reportMetric(metric_name_prefix + "/pct", "", metric_pct);
-					logger.info("Reprting metics, metric name: " + metric_name_prefix + "/pct" + ", value: " + metric_pct);
+					logger.debug("Reprting metics, metric name: " + metric_name_prefix + "/pct" + ", value: " + metric_pct);
 
 					/* calculating cluster-wide latency */
 
@@ -447,7 +448,7 @@ public class AerospikeAgent extends Agent {
 	 * @param bucketValue
 	 */
 	private void calculateClusterWideLatency(String category, String bucket, float bucketValue) {
-		logger.info("Calculating clusterwide latency.");
+		logger.debug("Calculating clusterwide latency.");
 		float value = clusterWideLatency.get(category).get(bucket) + bucketValue;
 		clusterWideLatency.get(category).put(bucket, value);
 	}
@@ -458,7 +459,7 @@ public class AerospikeAgent extends Agent {
 	 * @param clusterSize
 	 */
 	private void reportClusterWideLatency(int clusterSize) {
-		logger.info("Reporting clusterwide latency.");
+		logger.debug("Reporting clusterwide latency.");
 		String baseClusterWideLatencyMetric = METRIC_BASE_NAME + SLASH + SUMMARY + SLASH + LATENCY + SLASH;
 		for (Map.Entry<String, Map<String, Float>> entry : clusterWideLatency.entrySet()) {
 			String key = entry.getKey();
@@ -469,12 +470,12 @@ public class AerospikeAgent extends Agent {
 					/* calculate average for query category */
 					if (clusterSize > 0) {
 						reportMetric(metric_name, "", dataEntry.getValue() / clusterSize);
-						logger.info("Reprting metics, metric name: " + metric_name + ", value: " + dataEntry.getValue() / clusterSize);
+						logger.debug("Reprting metics, metric name: " + metric_name + ", value: " + dataEntry.getValue() / clusterSize);
 					}
 					
 				} else {
 					reportMetric(metric_name, "", dataEntry.getValue());
-					logger.info("Reprting metics, metric name: " + metric_name + ", value: " + dataEntry.getValue());
+					logger.debug("Reprting metics, metric name: " + metric_name + ", value: " + dataEntry.getValue());
 
 				}
 
@@ -489,7 +490,7 @@ public class AerospikeAgent extends Agent {
 	 *            namespace name to fetch the statistics
 	 */
 	public void reportNamespaceStats(String namespace) {
-		logger.info("Reporting namespace stats. Namespace: ", namespace);
+		logger.debug("Reporting namespace stats. Namespace: ", namespace);
 		String namespaceBaseMatric = metricBaseName + SLASH;
 		Node[] nodes = base.getAerospikeNodes();
 		for (Node node : nodes) {
@@ -500,7 +501,7 @@ public class AerospikeAgent extends Agent {
 					String metric_name = namespacePrefix + stat.getKey();
 					float value = Float.parseFloat(stat.getValue());
 					reportMetric(metric_name, "",value);
-					logger.info("Reprting metics, metric name: " + metric_name + ", value: " + value);
+					logger.debug("Reprting metics, metric name: " + metric_name + ", value: " + value);
 				}
 			}
 		}

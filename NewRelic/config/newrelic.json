@@ -1,6 +1,0 @@
-{
-  "license_key": "LICENSE KEY",
-  "log_level": "info",
-  "log_file_name": "newrelic_aerospike.log",
-  "log_file_path": "logs"
-}
