@@ -50,8 +50,7 @@ public class AerospikeAgentFactory extends AgentFactory {
 		 * Use pre-defined defaults to simplify configuration
 		 */
 
-		if (user == null || user.equalsIgnoreCase("") || user.equalsIgnoreCase("n/a") || password == null || password.equalsIgnoreCase("")
-				|| password.equalsIgnoreCase("n/a")) {
+		if (user == null || user.equalsIgnoreCase("") || password == null || password.equalsIgnoreCase("")) {
 			user = password = null;
 		}
 

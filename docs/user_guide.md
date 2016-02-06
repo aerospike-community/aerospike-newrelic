@@ -57,35 +57,36 @@ Plugin is used to push metrics in defined hierarchy/categories in order to disti
 Categories are :
 
    1. Summary : In this category stats per cluster are getting pushed. Metrics are pushed in the following manner
-	   * Component/aerospike/summary/<stat>
+	   * Component/aerospike/summary/{stat}
 	       * Component/aerospike/summary/cluster_size[]
 	       * Component/aerospike/summary/used_memory[]
-	   * Component/aerospike/summary/<stat category>/<stat>
+	   * Component/aerospike/summary/{stat category}/{stat}
 	       * Component/aerospike/summary/reads/success[]
 	       * Component/aerospike/summary/writes/success[]
-	   * Component/aerospike/summary/latency/<stat category>/<stat subcategory>/<stat>
+	   * Component/aerospike/summary/latency/{stat category}/{stat subcategory}/{stat}
 	       * Component/aerospike/summary/latency/reads/0ms_to_1ms/value[]
 	       * Component/aerospike/summary/latency/udf/0ms_to_1ms/value[]
    2. NodeStats: In this category stats per node are getting pushed. Metrics are pushed in the following manner
-	   * Component/aerospike/nodeStats/<Node_IP>/<stat>
-	       * Component/aerospike/nodeStats/<Node_IP>/used-bytes-disk[]
-	   * Component/aerospike/throughputStats/<Node_IP>/<stat>
-	       * Component/aerospike/throughputStats/<Node_IP>/reads/success[] 
+	   * Component/aerospike/nodeStats/{Node_IP}/{stat}
+	       * Component/aerospike/nodeStats/{Node_IP}/used-bytes-disk[]
+	   * Component/aerospike/throughputStats/{Node_IP}/{stat category}/{stat}
+	       * Component/aerospike/throughputStats/{Node_IP}/reads/success[] 
    3. NamespaceStats: In this category stats per namespace are getting pushed. Metrics are pushed in the following manner
-	   * Component/aerospike/namespaceStats/<Node_IP>/<namespace>/<stat>
-	       * Component/aerospike/namespaceStats/<Node_IP>/<namespace>/used-bytes-memory[]
-	       * Component/aerospike/namespaceStats/<Node_IP>/<namespace>/master-objects[]
+	   * Component/aerospike/namespaceStats/{Node_IP}/{namespace}/{stat}
+	       * Component/aerospike/namespaceStats/{Node_IP}/{namespace}/used-bytes-memory[]
+	       * Component/aerospike/namespaceStats/{Node_IP}/{namespace}/master-objects[]
    4. LatencyStat: In this category latency stats per node are getting pushed. Metrics are pushed in the following manner
-	   * Component/aerospike/latencyStats/<Node_IP>/<stat category>/<stat subcategory>/<stat>
-	       * Component/aerospike/latencyStats/<Node_IP>/writes_master/0ms_to_1ms/value[]
+	   * Component/aerospike/latencyStats/{Node_IP}/{stat category}/{stat subcategory}/{stat}
+	       * Component/aerospike/latencyStats/{Node_IP}/writes_master/0ms_to_1ms/value[]
    5. ThroughputStat:  In this category throughput stats (reads and writes) per node are getting pushed. Metrics are pushed in the following 
-	   * Component/aerospike/throughputStats/<Node_IP>/<stat category>/<stat>
-	       * Component/aerospike/throughputStats/<Node_IP>/reads/success[]
+	   * Component/aerospike/throughputStats/{Node_IP}/{stat category}/{stat}
+	       * Component/aerospike/throughputStats/{Node_IP}/reads/success[]
 	        
 Note :
 	User can choose from the above mentioned categories in order to create custom dashboards.
-* <Node_IP> is the node IP, present within a cluster.
-* namespace is the namespace name(e.g; test, bar) of a node.
+* {Node_IP} is the node IP, present within a cluster.
+* {namespace} is the namespace name(e.g; test, bar) of a node.
+* {stat} is the stat metric name. There are many stats pushed from newrelic plugin, User can find all the stat metric name here (http://www.aerospike.com/docs/reference/metrics/). In the given link NodeStats are under {Statistics} category and NamespaceStats are under {Namespace} category.
 
 ## Using wildcard "*" for grouping metrics
 --------------------------------------------
