@@ -90,8 +90,7 @@ Below is an example of the `plugin.json` file's contents :
 {
     "agents": [
         {
-            "host" : "ip",
-            "port" : "port",
+            "seed_list" : ["host:port","host:port","host:port"...],
             "user" : "username",
             "password" : "password",
             "clusterName" : "cluster name"
