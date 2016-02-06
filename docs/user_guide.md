@@ -96,24 +96,16 @@ For example .
 1. If user wants to plot "used-bytes-memory" for all nodes in a single graph, then this can be done in the following way:
 	* Component/aerospike/nodeStats/*/used-bytes-memory[]
 2. To monitor similar stats of a node like batch_initiate, batch_error etc refer to the following format:
-	* Component/aerospike/nodeStats/<ip>/batch*
-3.  In order to monitor all batch matching stats of all ips(nodes) refer to the following format.
-	* Component/aerospike/nodeStats/*/batch*
-4. Any nodeStat of all nodes in cluster can be monitored in following way.
-	* Component/aerospike/nodeStats/*/<stats>
-5. Specific namespace stats for all nodes in cluster can be monitored in following way.
-	* Component/aerospike/namespaceStats/*/<namespace>/<stats>
-6. All namespace stats for all nodes in cluster can be monitored in following way.
-	* Component/aerospike/namespaceStats/*/<stats>
+	* Component/aerospike/nodeStats/{Node_IP}/batch*
+3. Any nodeStat of all nodes in cluster can be monitored in following way.
+	* Component/aerospike/nodeStats/*/{stats}
+4. Specific namespace stats for all nodes in cluster can be monitored in following way.
+	* Component/aerospike/namespaceStats/*/{namespace}/{stats}
+5. All namespace stats for all nodes in cluster can be monitored in following way.
+	* Component/aerospike/namespaceStats/*/{stats}
 	
 Note :
-* This wild card can be used once in between and once at the end.
-* These are some valid wildcard usage
-    * Component/aerospike/nodeStats/*/batch*
-    * Component/aerospike/namespaceStats/*/<stats>
-    * Component/aerospike/latencyStats/*/write_master/1ms_to_8ms/*
-* Currently new relic does not allow usage of multiple wildcard characters in metric names as given below.
-    * Component/aerospike/*/<ip>/*/<stat> does not found any matching metric.
+* This wild card uses are as per newrelic metric naming rules.
 
 ## Limitations
 --------------
