@@ -86,7 +86,7 @@ Note :
 	User can choose from the above mentioned categories in order to create custom dashboards.
 * {Node_IP} is the node IP, present within a cluster.
 * {namespace} is the namespace name(e.g; test, bar) of a node.
-* {stat} is the stat metric name. There are many stats pushed from newrelic plugin, User can find all the stat metric name here (http://www.aerospike.com/docs/reference/metrics/). In the given link NodeStats are under {Statistics} category and NamespaceStats are under {Namespace} category.
+* {stat} is the stat metric name. There are many stats pushed from newrelic plugin, User can find all the stat metric name here (http://www.aerospike.com/docs/reference/metrics/) . In the given link NodeStats are under {Statistics} category and NamespaceStats are under {Namespace} category.
 
 ## Using wildcard "*" for grouping metrics
 --------------------------------------------
