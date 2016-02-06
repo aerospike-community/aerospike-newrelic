@@ -101,7 +101,7 @@ Below is an example of the `plugin.json` file's contents :
 ```
 
 **Note** 
-- If running community/non-secure Aerospike server then use user/password as **n/a** or left blank **""** or remove those fields from pluin.json file.
+- If running community/non-secure Aerospike server then left user/password blank **""** or remove those fields from pluin.json file.
 
 #### Configuring the `newrelic.json` file: 
 
