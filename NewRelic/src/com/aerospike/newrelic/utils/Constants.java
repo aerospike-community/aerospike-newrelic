@@ -46,7 +46,7 @@ public class Constants {
 
 	public static final String METRIC_BASE_NAME = "aerospike";
 
-	public static final String[] LATENCY_CATEGORY = { "reads", "writes_master", "query", "udf", "proxy" };
+	//public static final String[] LATENCY_CATEGORY = { "reads", "writes_master", "query", "udf", "proxy" };
 	//public static final String[] LATENCY_BUCKETS = { "LT 1ms", "GT 1ms to LT 8ms", "GT 8ms to LT 64ms", "GT 64ms" };
 	//public static final String[] LATENCY_BUCKETS = { "LT 1ms", "GT 1ms", "GT 8ms", "GT 64ms" };
 	public static final String[] LATENCY_BUCKETS = { "0ms_to_1ms", "1ms_to_8ms", "8ms_to_64ms", "GT_64ms"};

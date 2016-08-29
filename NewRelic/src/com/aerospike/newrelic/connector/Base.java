@@ -8,6 +8,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.Info;
@@ -16,6 +17,8 @@ import com.aerospike.client.policy.ClientPolicy;
 import com.aerospike.newrelic.utils.Utils;
 import com.newrelic.metrics.publish.util.Logger;
 import com.aerospike.client.Host;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 /**
  * Base class to communicate with Aerospike.
  * 
@@ -56,8 +59,7 @@ public class Base {
 			host_list.toArray(host_array);
 			this.client = new AerospikeClient(policy, host_array);
 			if (this.client == null || !this.client.isConnected()) {
-				logger.info("ERROR: "
-						+ "Connection to Aerospike cluster failed! Please check the server settings and try again!");
+				logger.error("Connection to Aerospike cluster failed! Please check the server settings and try again!");
 			}
 		}
 	}
@@ -99,11 +101,12 @@ public class Base {
 	 * @return Aerospiek Nodes
 	 */
 	public Node[] getAerospikeNodes() {
-
+		logger.debug("Getting aerospike nodes");
 		if (this.client == null)
 			return null;
 		return this.client.getNodes();
 	}
+
 
 	/**
 	 * Method to get node statistics from Aerospike
@@ -113,7 +116,7 @@ public class Base {
 	 * @return Map<String, String> Map of node statistics
 	 */
 	public Map<String, String> getNodeStatistics(Node node) {
-
+		logger.debug("Getting node statistics for node: " + node.toString());
 		Map<String, String> nodeStats = null;
 		if (this.client != null && node != null) {
 			nodeStats = Info.request(null, node);
@@ -124,6 +127,9 @@ public class Base {
 				pair[1] = Utils.transformStringMetric(pair[1]);
 				if (Utils.isValidNumber(pair[1])) {
 					Float val = Float.parseFloat(pair[1]);
+					// Older version(<3.9) have mixed stats(contains [-] and [_] both.)
+					// Convert all [-] to [_].
+					pair[0] = pair[0].replace("-", "_");
 					nodeStats.put(pair[0], String.valueOf(val));
 				}
 			}
@@ -152,6 +158,9 @@ public class Base {
 				pair[1] = Utils.transformStringMetric(pair[1]);
 				if (Utils.isValidNumber(pair[1])) {
 					Float val = Float.parseFloat(pair[1]);
+					// Older version(<3.9) have mixed stats(contains [-] and [_] both.)
+					// Convert all [-] to [_].
+					pair[0] = pair[0].replace("-", "_");					
 					namespaceStats.put(pair[0], String.valueOf(val));
 				}
 			}
@@ -168,14 +177,22 @@ public class Base {
 	 * @return Map<String, Map<String, String>> Map of latency stats
 	 */
 	public Map<String, Map<String, String>> getNodeLatency(Node node) {
-
+		logger.debug("Get node latency for node: " + node);
 		Map<String, Map<String, String>> latency = new HashMap<String, Map<String, String>>();
 		String filter = "latency:";
 		String latencyString = "";
 		String[] latencyBuckets = {};
 
-		if (node != null)
+		/*
+		if (node != null) {
 			latencyString = Info.request(null, node, filter);
+			if (latencyString.contains("no-data")) {
+				logger.error("Aerospike is starting,latency: error-run-too-short-or-back-too-small");
+				return latency;
+			}
+			logger.debug("latency_info: " + latencyString);
+		}*/
+
 
 		if (latencyString.length() != 0 && !latencyString.contains(LATENCY_ERROR))
 			latencyBuckets = latencyString.split(";");
@@ -186,7 +203,19 @@ public class Base {
 			String line1 = latencyBuckets[i + 1];
 			String key = line0.substring(0, line0.indexOf(':'));
 
-			if (key.equalsIgnoreCase("writes_reply"))
+			// 3.9+ server send namespace level latency in. {test}-read
+			// Change this in form of read-{test}. namespace name is unpredictable. put unpredictable part at last.
+			String[] lst = key.split("-");
+			if (lst.length > 1) {
+				key = lst[1] + "-" + lst[0];
+			}
+			
+			if (line0.contains("no-data")) {
+				logger.error("Not enough info for latency: error-run-too-short-or-back-too-small. ->" + line0);
+				continue;
+			}
+			
+			if (key.contains("writes_reply"))
 				continue;
 
 			String[] keys = line0.substring(line0.indexOf('>')).split(",");
@@ -233,18 +262,63 @@ public class Base {
 		}
 		return latency;
 	}
+	
 
 	/**
-	 * Method to extract throughput from node statistics.
+	 * Method to get namespaces for Aerospike node.
 	 * 
-	 * @param nodeStats
-	 *            Map of node statistics
-	 * @param node
-	 *            Aerospike node
-	 * @return Map<String, String> Map of node throughput(reads and writes)
+	 * @return String[] Array of Namespaces
 	 */
-	public Map<String, Map<String, String>> getThroughput(Map<String, String> nodeStats, Node node) {
+	public String[] getNamespaces() {
 
+		Node node = getAerospikeNodes()[0];
+		String[] namespaces;
+		String filter = "namespaces";
+		String ns_str = "";
+		if (node != null)
+			ns_str = Info.request(null, node, filter);
+		namespaces = ns_str.split(";");
+		return namespaces;
+	}
+
+
+	/**
+	 * Method to close all connection to Aerospike server.
+	 * 
+	 */
+	public void closeClientConnections() {
+		if (this.client != null)
+			this.client.close();
+	}
+	
+	/**
+	 * New Added to handle >3.9 version
+	 */
+	
+	public boolean newAsdversion(Node node) {
+		logger.debug("Check ASD version is new(>3.9) or old(<3.9)");
+		Map<String, String> nodeStats = null;
+		if (this.client != null && node != null) {
+			nodeStats = Info.request(null, node);
+			String build = nodeStats.get("build");
+			logger.debug("Node build: " + build);
+			String[] ver = build.split("[.]");
+			if (Integer.parseInt(ver[0]) > 3 || (Integer.parseInt(ver[0]) == 3 && Integer.parseInt(ver[1]) >= 9)) {
+				logger.info("New ASD > 3.9");
+				return true;
+			} else {
+				logger.info("Old ASD < 3.9");
+				return false;
+			}	
+		} else {
+			logger.debug("Client or node is down. Not able to get info");
+			throw new NullPointerException("Client or node is down. Not able to get info");
+		}
+	}
+
+	
+	public Map<String, Map<String, String>> getThroughput(Node node) {
+		logger.debug("Get node throughput");
 		String oldReadReqs = "";
 		String oldReadSuccess = "";
 		String oldWriteReqs = "";
@@ -257,33 +331,29 @@ public class Base {
 		Map<String, String> writeTpsHistory = new HashMap<String, String>();
 		Map<String, String> readTpsHistory = new HashMap<String, String>();
 		Map<String, Map<String, String>> output = new HashMap<String, Map<String, String>>();
-
+		
 		String nodeName = node.getHost().name;
-		if (Main.statsHistory.containsKey(nodeName)) {
-			if (Main.statsHistory.get(nodeName).containsKey("stat_read_reqs"))
-				oldReadReqs = Main.statsHistory.get(nodeName).get("stat_read_reqs");
+		if (Main.rwStatsHistory.containsKey(nodeName)) {
+			if (Main.rwStatsHistory.get(nodeName).containsKey("readReqs"))
+				oldReadReqs = Main.rwStatsHistory.get(nodeName).get("readReqs");
 
-			if (Main.statsHistory.get(nodeName).containsKey("stat_read_success"))
-				oldReadSuccess = Main.statsHistory.get(nodeName).get("stat_read_success");
+			if (Main.rwStatsHistory.get(nodeName).containsKey("readSuccess"))
+				oldReadSuccess = Main.rwStatsHistory.get(nodeName).get("readSuccess");
 
-			if (Main.statsHistory.get(nodeName).containsKey("stat_write_reqs"))
-				oldWriteReqs = Main.statsHistory.get(nodeName).get("stat_write_reqs");
+			if (Main.rwStatsHistory.get(nodeName).containsKey("writeReqs"))
+				oldWriteReqs = Main.rwStatsHistory.get(nodeName).get("writeReqs");
 
-			if (Main.statsHistory.get(nodeName).containsKey("stat_write_success"))
-				oldWriteSuccess = Main.statsHistory.get(nodeName).get("stat_write_success");
+			if (Main.rwStatsHistory.get(nodeName).containsKey("writeReqs"))
+				oldWriteSuccess = Main.rwStatsHistory.get(nodeName).get("writeReqs");
 		}
 
-		if (nodeStats != null && nodeStats.containsKey("stat_read_reqs"))
-			newReadReqs = nodeStats.get("stat_read_reqs");
+		Map<String, String> readWriteInfo = getReadWriteInfoFromNodes(node);
+		newReadReqs = readWriteInfo.get("readReqs");
+		newReadSuccess = readWriteInfo.get("readSuccess");
+		newWriteReqs = readWriteInfo.get("writeReqs");
+		newWriteSuccess = readWriteInfo.get("writeReqs");
 
-		if (nodeStats != null && nodeStats.containsKey("stat_read_success"))
-			newReadSuccess = nodeStats.get("stat_read_success");
-
-		if (nodeStats != null && nodeStats.containsKey("stat_write_reqs"))
-			newWriteReqs = nodeStats.get("stat_write_reqs");
-
-		if (nodeStats != null && nodeStats.containsKey("stat_write_success"))
-			newWriteSuccess = nodeStats.get("stat_write_success");
+		Main.rwStatsHistory.put(nodeName, readWriteInfo);
 
 		//Integer timestamp = Calendar.getInstance().get(Calendar.MINUTE) * 60 + Calendar.getInstance().get(Calendar.SECOND);
 		Long timeStamp = System.currentTimeMillis() / 1000l;
@@ -331,23 +401,99 @@ public class Base {
 		output.put("writes", writeTpsHistory);
 		return output;
 	}
-
-	/**
-	 * Method to get namespaces for Aerospike node.
-	 * 
-	 * @return String[] Array of Namespaces
-	 */
-	public String[] getNamespaces() {
-
-		Node node = getAerospikeNodes()[0];
-		String[] namespaces;
-		String filter = "namespaces";
-		String ns_str = "";
-		if (node != null)
-			ns_str = Info.request(null, node, filter);
-		namespaces = ns_str.split(";");
-		return namespaces;
+	
+	
+	public Map<String, String> getReadWriteInfoFromNodes(Node node) {
+		boolean newAsd = newAsdversion(node);
+		logger.debug("Get Read Write Info From Nodes");
+		if (newAsd == false) {
+			return getReadWriteInfoFromNodeStats(node);
+		
+		} else {
+			return getReadWriteInfoFromNamespaceStats(node);
+		}	
 	}
+	
+	
+	public Map<String, String> getReadWriteInfoFromNodeStats(Node node) {
+		logger.debug("getReadWriteInfoFrom NodeStats");
+		Map<String, String> readWriteInfo = new HashMap<String, String>();
+		Map<String, String> nodeStats = getNodeStatistics(node);
+		String newReadReqs = "";
+		String newReadSuccess = "";
+		String newWriteReqs = "";
+		String newWriteSuccess = "";
+		
+		if (nodeStats != null && nodeStats.containsKey("stat_read_reqs"))
+			newReadReqs = nodeStats.get("stat_read_reqs");
+
+		if (nodeStats != null && nodeStats.containsKey("stat_read_success"))
+			newReadSuccess = nodeStats.get("stat_read_success");
+
+		if (nodeStats != null && nodeStats.containsKey("stat_write_reqs"))
+			newWriteReqs = nodeStats.get("stat_write_reqs");
+
+		if (nodeStats != null && nodeStats.containsKey("stat_write_success"))
+			newWriteSuccess = nodeStats.get("stat_write_success");
+		
+		readWriteInfo.put("readReqs", newReadReqs);
+		readWriteInfo.put("readSuccess", newReadSuccess);
+		readWriteInfo.put("writeReqs", newWriteReqs);
+		readWriteInfo.put("writeSuccess", newWriteSuccess);
+		return readWriteInfo;
+		
+	}
+	
+	
+	public Map<String, String> getReadWriteInfoFromNamespaceStats(Node node) {
+		logger.debug("getReadWriteInfoFrom NamespaceStats");
+		Map<String, String> readWriteInfo = new HashMap<String, String>();
+		String[] namespaces = this.getNamespaces();
+		int newReadSuccess = 0;
+		int newReadReqs = 0;
+		int newWriteSuccess = 0;
+		int newWriteReqs = 0;
+		boolean writeCondition = false;
+		boolean readCondition = false;
+		
+		if (namespaces.length != 0) {
+			for (String namespace : namespaces) {
+				Map<String, String> namespaceStats = getNamespaceStatistics(namespace, node);
+				logger.debug(namespaceStats);
+				if (namespaceStats != null && namespaceStats.containsKey("client_read_success") && 
+						namespaceStats.containsKey("client_read_error")) {
+					newReadSuccess =+ Integer.parseInt(namespaceStats.get("client_read_success"));
+					newReadReqs =+ (Integer.parseInt(namespaceStats.get("client_read_error")) + 
+							Integer.parseInt(namespaceStats.get("client_read_success")));
+					readCondition = true;
+				}
+		
+				if (namespaceStats != null && namespaceStats.containsKey("client_write_success") &&
+						namespaceStats.containsKey("client_write_error")) {
+					newWriteSuccess = Integer.parseInt(namespaceStats.get("client_write_success"));
+					newWriteReqs =+ (Integer.parseInt(namespaceStats.get("client_write_error")) + 
+							Integer.parseInt(namespaceStats.get("client_write_success")));
+					writeCondition = true;
+				}
+			}
+			if (readCondition == true) {
+				readWriteInfo.put("readSuccess", Integer.toString(newReadSuccess));
+				readWriteInfo.put("readReqs", Integer.toString(newReadReqs));
+			} else {
+				readWriteInfo.put("readSuccess", "");
+				readWriteInfo.put("readReqs", "");
+			}
+			if (writeCondition == true) {
+				readWriteInfo.put("writeSuccess", Integer.toString(newWriteSuccess));
+				readWriteInfo.put("writeReqs", Integer.toString(newWriteReqs));
+			} else {
+				readWriteInfo.put("writeSuccess", "");
+				readWriteInfo.put("writeReqs", "");
+			}
+		}	
+		return readWriteInfo;		
+	}
+
 
 	/**
 	 * Method to extract memory stat metrics from node statistics.
@@ -356,54 +502,156 @@ public class Base {
 	 *            Map of node statistics
 	 * @return Map<String, String> Map of memory statistics
 	 */
-	public Map<String, String> getMemoryStats(Map<String, String> nodeStats) {
+	public Map<String, String> getMemoryStats(Node node) {
+		boolean newAsd = newAsdversion(node);
+		if (newAsd == false) {
+			return getMemoryStatsFromNodeStats(node);
+		
+		} else {
+			return getMemoryStatsFromNamespaceStats(node);
+		}
+	}
 
+	
+	public Map<String, String> getMemoryStatsFromNodeStats(Node node) {
+		logger.debug("Getting node memory info");		
+		Map<String, String> nodeStats = getNodeStatistics(node);
 		Map<String, String> memoryStats = new HashMap<String, String>();
 		try {
-			memoryStats.put("used-bytes-memory", nodeStats.get("used-bytes-memory"));
-			memoryStats.put("total-bytes-memory", nodeStats.get("total-bytes-memory"));
-			Float freeBytes = (Float.parseFloat(nodeStats.get("total-bytes-memory"))
-					- Float.parseFloat(nodeStats.get("used-bytes-memory")));
-			memoryStats.put("free-bytes-memory", Float.toString(freeBytes));
+			memoryStats.put("used_bytes_memory", nodeStats.get("used_bytes_memory"));
+			//memoryStats.put("total_bytes_memory", nodeStats.get("total_bytes_memory"));
+			//Float freeBytes = (Float.parseFloat(nodeStats.get("total_bytes_memory"))
+			//		- Float.parseFloat(nodeStats.get("used_bytes_memory")));
+			//memoryStats.put("free_bytes_memory", Float.toString(freeBytes));
 		} catch (Exception exception) {
-			memoryStats.put("free-bytes-memory", "n/s");
-			memoryStats.put("total-bytes-memory", "n/s");
+			//memoryStats.put("free_bytes_memory", "n/s");
+			//memoryStats.put("total_bytes_memory", "n/s");
+			memoryStats.put("used_bytes_memory", "n/s");
 			logger.error("ERROR: ", exception);
 		}
+		logger.info("NodeMemoryStats");
+		logger.info(memoryStats);
+		return memoryStats;		
+	}
+	
+	
+	public Map<String, String> getMemoryStatsFromNamespaceStats(Node node) {
+		logger.debug("Getting namespace memory info");
+		String[] namespaces = this.getNamespaces();
+		Map<String, String> memoryStats = new HashMap<String, String>();
+		float totalUsedMemory = (float)0.0;
+		//float totalMemory = (float)0.0;
 
+		// There are few changed in 3.9 stats
+		// (global stat)used-bytes-memory -> (namespace stat)memory_used_bytes
+		// (global stat)total-bytes-memory -> (namespace config)memory-size
+		if (namespaces.length != 0) {
+			try {
+				for (String namespace : namespaces) {
+					Map<String, String> namespaceStats = getNamespaceStatistics(namespace, node);
+					//totalUsedMemory =+ Float.parseFloat(namespaceStats.get("memory_used_bytes"));
+					totalUsedMemory =+ Double.valueOf(namespaceStats.get("memory_used_bytes")).floatValue();
+
+					//totalMemory =+ Float.parseFloat(namespaceStats.get("memory_size"));
+					logger.info("totalUsedMemory: " + totalUsedMemory);
+					//logger.info("totalMemory: " + totalMemory);
+				}
+				//float freeBytes = totalMemory - totalUsedMemory;
+				memoryStats.put("used_bytes_memory", Float.toString(totalUsedMemory));
+				//memoryStats.put("total_bytes_memory", Float.toString(totalMemory));
+				//memoryStats.put("free_bytes_memory", Float.toString(freeBytes));
+				
+			} catch (Exception exception) {
+				//memoryStats.put("free_bytes_memory", "n/s");
+				//memoryStats.put("total_bytes_memory", "n/s");
+				memoryStats.put("used_bytes_memory", "n/s");
+				logger.error("ERROR: ", exception);
+			}
+		}
+		logger.info("NamespaceMemoryStats");
+		logger.info(memoryStats);
 		return memoryStats;
 	}
 
+	
 	/**
-	 * Method to extract disk stats from node statistics.
+	 * Method to extract memory stat metrics from node statistics.
 	 * 
 	 * @param nodeStats
 	 *            Map of node statistics
-	 * @return Map<String, String> Map of Disk statistics
+	 * @return Map<String, String> Map of memory statistics
 	 */
-	public Map<String, String> getDiskStats(Map<String, String> nodeStats) {
+	public Map<String, String> getDiskStats(Node node) {
+		boolean newAsd = newAsdversion(node);
+		if (newAsd == false) {
+			return getDiskStatsFromNodeStats(node);
+		
+		} else {
+			return getDiskStatsFromNamespaceStats(node);
+		}
+	}
 
+	
+	public Map<String, String> getDiskStatsFromNodeStats(Node node) {
+		logger.debug("Getting node disk info");
+		Map<String, String> nodeStats = getNodeStatistics(node);
 		Map<String, String> diskStats = new HashMap<String, String>();
 		try {
-			diskStats.put("used-bytes-disk", nodeStats.get("used-bytes-disk"));
-			diskStats.put("total-bytes-disk", nodeStats.get("total-bytes-disk"));
-			Float freeBytes = (Float.parseFloat(nodeStats.get("total-bytes-disk"))
-					- Float.parseFloat(nodeStats.get("used-bytes-disk")));
-			diskStats.put("free-bytes-disk", Float.toString(freeBytes));
+			diskStats.put("used_bytes_disk", nodeStats.get("used_bytes_disk"));
+			//diskStats.put("total_bytes_disk", nodeStats.get("total_bytes_disk"));
+			//Float freeBytes = (Float.parseFloat(nodeStats.get("total_bytes_disk"))
+			//		- Float.parseFloat(nodeStats.get("used_bytes_disk")));
+			//diskStats.put("free_bytes_disk", Float.toString(freeBytes));
 		} catch (Exception exception) {
-			diskStats.put("free-bytes-disk", "n/s");
-			diskStats.put("total-bytes-disk", "n/s");
+			//diskStats.put("free_bytes_disk", "n/s");
+			//diskStats.put("total_bytes_disk", "n/s");
+			diskStats.put("used_bytes_disk", "n/s");
 			logger.error("ERROR: ", exception);
 		}
-		return diskStats;
+		logger.info("NodeDiskStats");
+		logger.info(diskStats);
+		return diskStats;		
 	}
+	
+	
+	public Map<String, String> getDiskStatsFromNamespaceStats(Node node) {
+		logger.debug("Getting namespace disk info");
+		String[] namespaces = this.getNamespaces();
+		Map<String, String> diskStats = new HashMap<String, String>();
+		float totalUsedDisk = (float) 0.0;
+		//float totalDisk = (float)0.0;
+		
+		// There are few changed in 3.9 stats
+		// (global stat)used-bytes-disk -> (namespace stat)device_used_bytes
+		// (global stat)total-bytes-disk -> (namespace config)device-total-bytes
+		
+		if (namespaces.length != 0) {
+			try {
+				for (String namespace : namespaces) {
+					Map<String, String> namespaceStats = getNamespaceStatistics(namespace, node);
+					logger.info("namespaceStats" + namespaceStats);
+					//totalUsedDisk =+ Float.parseFloat(namespaceStats.get("device_used_bytes"));
+					totalUsedDisk =+ Double.valueOf(namespaceStats.get("device_used_bytes")).floatValue();
 
-	/**
-	 * Method to close all connection to Aerospike server.
-	 * 
-	 */
-	public void closeClientConnections() {
-		if (this.client != null)
-			this.client.close();
-	}
+					//totalDisk =+ Float.parseFloat(namespaceStats.get("device_total_bytes"));
+					logger.info("totalUsedDisk: " + totalUsedDisk);
+					//logger.info("totalDisk: " + totalDisk);
+				}
+				//float freeBytes = totalDisk - totalUsedDisk;
+				diskStats.put("used_bytes_disk", Float.toString(totalUsedDisk));
+				//diskStats.put("total_bytes_disk", Float.toString(totalDisk));
+				//diskStats.put("free_bytes_disk", Float.toString(freeBytes));
+				
+			} catch (Exception exception) {
+				//diskStats.put("free_bytes_disk", "n/s");
+				//diskStats.put("total_bytes_disk", "n/s");
+				diskStats.put("used_bytes_disk", "n/s");
+				logger.error("ERROR: ", exception);
+			}
+		}
+		logger.info("NamespaceDiskStats");
+		logger.info(diskStats);
+		return diskStats;
+	}	
+	
 }

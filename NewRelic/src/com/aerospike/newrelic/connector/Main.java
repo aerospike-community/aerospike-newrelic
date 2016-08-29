@@ -18,6 +18,7 @@ public class Main {
 	public static Map<String, Map<String, String>> readTpsHistory = new HashMap<String, Map<String, String>>();
 	public static Map<String, Map<String, String>> writeTpsHistory = new HashMap<String, Map<String, String>>();
 	public static Map<String, Map<String, String>> statsHistory = new HashMap<String, Map<String, String>>();
+	public static Map<String, Map<String, String>> rwStatsHistory = new HashMap<String, Map<String, String>>();
 
 	private static final Logger logger = Logger.getLogger(Main.class);
 
