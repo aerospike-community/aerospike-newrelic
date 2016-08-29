@@ -182,7 +182,9 @@ public class Base {
 		String filter = "latency:";
 		String latencyString = "";
 		String[] latencyBuckets = {};
-
+		
+		latencyString = Info.request(null, node, filter);
+		logger.debug("latency_info: " + latencyString);
 		/*
 		if (node != null) {
 			latencyString = Info.request(null, node, filter);
@@ -200,6 +202,10 @@ public class Base {
 		for (Integer i = 0; i < latencyBuckets.length; i += 2) {
 			Map<String, String> data = new HashMap<String, String>();
 			String line0 = latencyBuckets[i];
+			if (line0.contains("no-data")) {
+				logger.error("Not enough info for latency: error-run-too-short-or-back-too-small. ->" + line0);
+				continue;
+			}
 			String line1 = latencyBuckets[i + 1];
 			String key = line0.substring(0, line0.indexOf(':'));
 
@@ -208,11 +214,6 @@ public class Base {
 			String[] lst = key.split("-");
 			if (lst.length > 1) {
 				key = lst[1] + "-" + lst[0];
-			}
-			
-			if (line0.contains("no-data")) {
-				logger.error("Not enough info for latency: error-run-too-short-or-back-too-small. ->" + line0);
-				continue;
 			}
 			
 			if (key.contains("writes_reply"))
@@ -449,10 +450,10 @@ public class Base {
 		logger.debug("getReadWriteInfoFrom NamespaceStats");
 		Map<String, String> readWriteInfo = new HashMap<String, String>();
 		String[] namespaces = this.getNamespaces();
-		int newReadSuccess = 0;
-		int newReadReqs = 0;
-		int newWriteSuccess = 0;
-		int newWriteReqs = 0;
+		float newReadSuccess = 0;
+		float newReadReqs = 0;
+		float newWriteSuccess = 0;
+		float newWriteReqs = 0;
 		boolean writeCondition = false;
 		boolean readCondition = false;
 		
@@ -462,30 +463,30 @@ public class Base {
 				logger.debug(namespaceStats);
 				if (namespaceStats != null && namespaceStats.containsKey("client_read_success") && 
 						namespaceStats.containsKey("client_read_error")) {
-					newReadSuccess =+ Integer.parseInt(namespaceStats.get("client_read_success"));
-					newReadReqs =+ (Integer.parseInt(namespaceStats.get("client_read_error")) + 
-							Integer.parseInt(namespaceStats.get("client_read_success")));
+					newReadSuccess =+ Float.parseFloat(namespaceStats.get("client_read_success"));
+					newReadReqs =+ (Float.parseFloat(namespaceStats.get("client_read_error")) + 
+							Float.parseFloat(namespaceStats.get("client_read_success")));
 					readCondition = true;
 				}
 		
 				if (namespaceStats != null && namespaceStats.containsKey("client_write_success") &&
 						namespaceStats.containsKey("client_write_error")) {
-					newWriteSuccess = Integer.parseInt(namespaceStats.get("client_write_success"));
-					newWriteReqs =+ (Integer.parseInt(namespaceStats.get("client_write_error")) + 
-							Integer.parseInt(namespaceStats.get("client_write_success")));
+					newWriteSuccess = Float.parseFloat(namespaceStats.get("client_write_success"));
+					newWriteReqs =+ (Float.parseFloat(namespaceStats.get("client_write_error")) + 
+							Float.parseFloat(namespaceStats.get("client_write_success")));
 					writeCondition = true;
 				}
 			}
 			if (readCondition == true) {
-				readWriteInfo.put("readSuccess", Integer.toString(newReadSuccess));
-				readWriteInfo.put("readReqs", Integer.toString(newReadReqs));
+				readWriteInfo.put("readSuccess", Float.toString(newReadSuccess));
+				readWriteInfo.put("readReqs", Float.toString(newReadReqs));
 			} else {
 				readWriteInfo.put("readSuccess", "");
 				readWriteInfo.put("readReqs", "");
 			}
 			if (writeCondition == true) {
-				readWriteInfo.put("writeSuccess", Integer.toString(newWriteSuccess));
-				readWriteInfo.put("writeReqs", Integer.toString(newWriteReqs));
+				readWriteInfo.put("writeSuccess", Float.toString(newWriteSuccess));
+				readWriteInfo.put("writeReqs", Float.toString(newWriteReqs));
 			} else {
 				readWriteInfo.put("writeSuccess", "");
 				readWriteInfo.put("writeReqs", "");
