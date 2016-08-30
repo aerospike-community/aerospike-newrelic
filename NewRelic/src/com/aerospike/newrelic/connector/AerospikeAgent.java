@@ -372,10 +372,11 @@ public class AerospikeAgent extends Agent {
         logger.debug("Reporting node latency.");
         String baseLatentyMetric = metricBaseName + SLASH + LATENCY_STATS + SLASH;
         /* setting default values to cluster-wide latency map */
-        //initClusterWideLatency();
+        initClusterWideLatency();
         Node[] nodes = base.getAerospikeNodes();
         for (Node node : nodes) {
             Map<String, Map<String, String>> latency = base.getNodeLatency(node);
+            logger.info("Node latency: " + latency);
             for (Map.Entry<String, Map<String, String>> entry : latency.entrySet()) {
                 String key = entry.getKey();
                 for (Map.Entry<String, String> dataEntry : entry.getValue().entrySet()) {
@@ -393,7 +394,7 @@ public class AerospikeAgent extends Agent {
                     /* calculating cluster-wide latency */
                     
                     calculateClusterWideLatency(key, dataEntry.getKey(),
-                                                Float.parseFloat(dataEntry.getValue().split(";")[0]));
+                    		metric_value);
                     
                 }
             }
@@ -406,19 +407,12 @@ public class AerospikeAgent extends Agent {
      * Method to set default values to cluster-wide latency map.
      *
      */
-    /*
+    
     private void initClusterWideLatency() {
         clusterWideLatency.clear();
-        for (String category : LATENCY_CATEGORY) {
-            Map<String, Float> bucketMap = new HashMap<String, Float>();
-            for (String bucket : LATENCY_BUCKETS) {
-                bucketMap.put(bucket, (float) 0);
-            }
-            clusterWideLatency.put(category, bucketMap);
-        }
-    }*/
+    }
     
-    private void initClusterWideKeyLatency(String category) {
+    private void initClusterWideLatencyBucket(String category) {
         Map<String, Float> bucketMap = new HashMap<String, Float>();
         for (String bucket : LATENCY_BUCKETS) {
             bucketMap.put(bucket, (float) 0);
@@ -439,7 +433,7 @@ public class AerospikeAgent extends Agent {
         if (clusterWideLatency.containsKey(category)) {
             value = clusterWideLatency.get(category).get(bucket) + bucketValue;
         } else {
-            initClusterWideKeyLatency(category);
+            initClusterWideLatencyBucket(category);
         }
         clusterWideLatency.get(category).put(bucket, value);
     }

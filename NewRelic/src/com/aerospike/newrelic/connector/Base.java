@@ -211,6 +211,12 @@ public class Base {
 
 			// 3.9+ server send namespace level latency in. {test}-read
 			// Change this in form of read-{test}. namespace name is unpredictable. put unpredictable part at last.
+			if (key.contains("reads"))
+				key = "read";
+			
+			if (key.contains("writes"))
+				key = "write";
+			
 			String[] lst = key.split("-");
 			if (lst.length > 1) {
 				key = lst[1] + "-" + lst[0];
