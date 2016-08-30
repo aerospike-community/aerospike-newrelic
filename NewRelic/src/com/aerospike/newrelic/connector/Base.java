@@ -185,15 +185,6 @@ public class Base {
 		
 		latencyString = Info.request(null, node, filter);
 		logger.debug("latency_info: " + latencyString);
-		/*
-		if (node != null) {
-			latencyString = Info.request(null, node, filter);
-			if (latencyString.contains("no-data")) {
-				logger.error("Aerospike is starting,latency: error-run-too-short-or-back-too-small");
-				return latency;
-			}
-			logger.debug("latency_info: " + latencyString);
-		}*/
 
 
 		if (latencyString.length() != 0 && !latencyString.contains(LATENCY_ERROR))
@@ -273,6 +264,7 @@ public class Base {
 
 	/**
 	 * Method to get namespaces for Aerospike node.
+<<<<<<< HEAD
 	 * 
 	 * @return String[] Array of Namespaces
 	 */
@@ -301,6 +293,36 @@ public class Base {
 	/**
 	 * New Added to handle >3.9 version
 	 */
+=======
+	 * 
+	 * @return String[] Array of Namespaces
+	 */
+	public String[] getNamespaces() {
+
+		Node node = getAerospikeNodes()[0];
+		String[] namespaces;
+		String filter = "namespaces";
+		String ns_str = "";
+		if (node != null)
+			ns_str = Info.request(null, node, filter);
+		namespaces = ns_str.split(";");
+		return namespaces;
+	}
+
+
+	/**
+	 * Method to close all connection to Aerospike server.
+	 * 
+	 */
+	public void closeClientConnections() {
+		if (this.client != null)
+			this.client.close();
+	}
+	
+	/**
+	 * New Added to handle >3.9 version
+	 */
+>>>>>>> a245cd73c9045254b185bc64f7ddbd60f8a2007c
 	
 	public boolean newAsdversion(Node node) {
 		logger.debug("Check ASD version is new(>3.9) or old(<3.9)");
@@ -355,12 +377,20 @@ public class Base {
 		}
 
 		Map<String, String> readWriteInfo = getReadWriteInfoFromNodes(node);
+<<<<<<< HEAD
 		newReadReqs = readWriteInfo.get("readReqs");
 		newReadSuccess = readWriteInfo.get("readSuccess");
 		newWriteReqs = readWriteInfo.get("writeReqs");
 		newWriteSuccess = readWriteInfo.get("writeReqs");
 
 		Main.rwStatsHistory.put(nodeName, readWriteInfo);
+=======
+		newReadReqs = readWriteInfo.get("newReadReqs");
+		newReadSuccess = readWriteInfo.get("newReadSuccess");
+		newWriteReqs = readWriteInfo.get("newWriteReqs");
+		newWriteSuccess = readWriteInfo.get("newWriteSuccess");
+
+>>>>>>> a245cd73c9045254b185bc64f7ddbd60f8a2007c
 
 		//Integer timestamp = Calendar.getInstance().get(Calendar.MINUTE) * 60 + Calendar.getInstance().get(Calendar.SECOND);
 		Long timeStamp = System.currentTimeMillis() / 1000l;
@@ -443,10 +473,17 @@ public class Base {
 		if (nodeStats != null && nodeStats.containsKey("stat_write_success"))
 			newWriteSuccess = nodeStats.get("stat_write_success");
 		
+<<<<<<< HEAD
 		readWriteInfo.put("readReqs", newReadReqs);
 		readWriteInfo.put("readSuccess", newReadSuccess);
 		readWriteInfo.put("writeReqs", newWriteReqs);
 		readWriteInfo.put("writeSuccess", newWriteSuccess);
+=======
+		readWriteInfo.put("newReadReqs", newReadReqs);
+		readWriteInfo.put("newReadSuccess", newReadSuccess);
+		readWriteInfo.put("newWriteReqs", newWriteReqs);
+		readWriteInfo.put("newWriteSuccess", newWriteSuccess);
+>>>>>>> a245cd73c9045254b185bc64f7ddbd60f8a2007c
 		return readWriteInfo;
 		
 	}
@@ -456,10 +493,17 @@ public class Base {
 		logger.debug("getReadWriteInfoFrom NamespaceStats");
 		Map<String, String> readWriteInfo = new HashMap<String, String>();
 		String[] namespaces = this.getNamespaces();
+<<<<<<< HEAD
 		float newReadSuccess = 0;
 		float newReadReqs = 0;
 		float newWriteSuccess = 0;
 		float newWriteReqs = 0;
+=======
+		int newReadSuccess = 0;
+		int newReadReqs = 0;
+		int newWriteSuccess = 0;
+		int newWriteReqs = 0;
+>>>>>>> a245cd73c9045254b185bc64f7ddbd60f8a2007c
 		boolean writeCondition = false;
 		boolean readCondition = false;
 		
@@ -469,21 +513,34 @@ public class Base {
 				logger.debug(namespaceStats);
 				if (namespaceStats != null && namespaceStats.containsKey("client_read_success") && 
 						namespaceStats.containsKey("client_read_error")) {
+<<<<<<< HEAD
 					newReadSuccess =+ Float.parseFloat(namespaceStats.get("client_read_success"));
 					newReadReqs =+ (Float.parseFloat(namespaceStats.get("client_read_error")) + 
 							Float.parseFloat(namespaceStats.get("client_read_success")));
+=======
+					newReadSuccess =+ Integer.parseInt(namespaceStats.get("client_read_success"));
+					newReadReqs =+ (Integer.parseInt(namespaceStats.get("client_read_error")) + 
+							Integer.parseInt(namespaceStats.get("client_read_success")));
+>>>>>>> a245cd73c9045254b185bc64f7ddbd60f8a2007c
 					readCondition = true;
 				}
 		
 				if (namespaceStats != null && namespaceStats.containsKey("client_write_success") &&
 						namespaceStats.containsKey("client_write_error")) {
+<<<<<<< HEAD
 					newWriteSuccess = Float.parseFloat(namespaceStats.get("client_write_success"));
 					newWriteReqs =+ (Float.parseFloat(namespaceStats.get("client_write_error")) + 
 							Float.parseFloat(namespaceStats.get("client_write_success")));
+=======
+					newWriteSuccess = Integer.parseInt(namespaceStats.get("client_write_success"));
+					newWriteReqs =+ (Integer.parseInt(namespaceStats.get("client_write_error")) + 
+							Integer.parseInt(namespaceStats.get("client_write_success")));
+>>>>>>> a245cd73c9045254b185bc64f7ddbd60f8a2007c
 					writeCondition = true;
 				}
 			}
 			if (readCondition == true) {
+<<<<<<< HEAD
 				readWriteInfo.put("readSuccess", Float.toString(newReadSuccess));
 				readWriteInfo.put("readReqs", Float.toString(newReadReqs));
 			} else {
@@ -496,6 +553,20 @@ public class Base {
 			} else {
 				readWriteInfo.put("writeSuccess", "");
 				readWriteInfo.put("writeReqs", "");
+=======
+				readWriteInfo.put("newReadSuccess", Integer.toString(newReadSuccess));
+				readWriteInfo.put("newReadReqs", Integer.toString(newReadReqs));
+			} else {
+				readWriteInfo.put("newReadSuccess", "");
+				readWriteInfo.put("newReadReqs", "");
+			}
+			if (writeCondition == true) {
+				readWriteInfo.put("newWriteSuccess", Integer.toString(newWriteSuccess));
+				readWriteInfo.put("newWriteReqs", Integer.toString(newWriteReqs));
+			} else {
+				readWriteInfo.put("newWriteSuccess", "");
+				readWriteInfo.put("newWriteReqs", "");
+>>>>>>> a245cd73c9045254b185bc64f7ddbd60f8a2007c
 			}
 		}	
 		return readWriteInfo;		
@@ -661,4 +732,8 @@ public class Base {
 		return diskStats;
 	}	
 	
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> a245cd73c9045254b185bc64f7ddbd60f8a2007c
