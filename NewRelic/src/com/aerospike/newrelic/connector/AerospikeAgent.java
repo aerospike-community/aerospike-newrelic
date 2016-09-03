@@ -50,6 +50,7 @@ public class AerospikeAgent extends Agent {
     Map<String, Float> totalReadTps;
     Map<String, Float> totalWriteTps;
     Map<String, Map<String, Float>> clusterWideLatency;
+    Map<String, Map<String, Float>> clusterWideNamespaceLatency;
     
     private static final Logger logger = Logger.getLogger(AerospikeAgent.class);
     
@@ -85,6 +86,7 @@ public class AerospikeAgent extends Agent {
             
             /* creating map for cluster-wide latency */
             clusterWideLatency = new HashMap<String, Map<String, Float>>();
+            clusterWideNamespaceLatency = new HashMap<String, Map<String, Float>>();
             
             /* Creating AerospikeClient */
             this.base = new Base();
@@ -166,33 +168,35 @@ public class AerospikeAgent extends Agent {
      */
     public Map<String, String> reportNodeStatistics(Node node) {
         logger.debug("Reporting node stats: " + node);
-        Float totalUsedMemory = (float) 0;
-        //Float totalMemory = (float) 0;
-        Float totalUsedDisk = (float) 0;
-        //Float totalDisk = (float) 0;
-        //Float batchInitiate = (float) 0;
+
         
         String nodeStatPrefix = metricBaseName + SLASH + NODE_STATS + SLASH + node.getHost().name + SLASH;
         Map<String, String> nodeStats = base.getNodeStatistics(node);
-        
-        Map<String, String> memoryStats = base.getMemoryStats(node);
-        Map<String, String> diskStats = base.getDiskStats(node);
-        
-        totalUsedMemory = Float.parseFloat(memoryStats.get("used_bytes_memory"));
-        //totalMemory = Float.parseFloat(nodeStats.get("total-bytes-memory"));
-        totalUsedDisk = Float.parseFloat(diskStats.get("used_bytes_disk"));
-        //totalDisk = Float.parseFloat(nodeStats.get("total-bytes-disk"));
-        //batchInitiate = Float.parseFloat(nodeStats.get("batch_initiate"));
-        
-        reportMetric(nodeStatPrefix + "used_bytes_memory", "", totalUsedMemory);
-        logger.debug("Reprting metics, metric name: " + nodeStatPrefix + "used_bytes_memory" + ", value: " + totalUsedMemory);
-        
-        //reportMetric(baseSummaryMetric + "total_memory", "", totalMemory);
-        //logger.debug("Reprting metics, metric name: " + baseSummaryMetric + "total_memory" + ", value: " + totalMemory);
-        
-        reportMetric(nodeStatPrefix + "used_bytes_disk", "", totalUsedDisk);
-        logger.debug("Reprting metics, metric name: " + nodeStatPrefix + "used_bytes_disk" + ", value: " + totalUsedDisk);
-        
+
+		boolean newAsd = base.newAsdversion(node);
+        if (newAsd == true) {
+        	logger.debug("New ASD, collect used_disk and used_memory.");
+            Float totalUsedMemory = (float) 0;
+            Float totalUsedDisk = (float) 0;
+            
+            Map<String, String> memoryStats = base.getMemoryStats(node);
+            Map<String, String> diskStats = base.getDiskStats(node);
+            
+            if (memoryStats.get("used_bytes_memory") != null && memoryStats.get("used_bytes_memory") != "n/s")
+            	totalUsedMemory = Float.parseFloat(memoryStats.get("used_bytes_memory"));
+            
+            if (diskStats.get("used_bytes_disk") != null && diskStats.get("used_bytes_disk") != "n/s")
+            	totalUsedDisk = Float.parseFloat(diskStats.get("used_bytes_disk"));
+            
+            reportMetric(nodeStatPrefix + "used_bytes_memory", "", totalUsedMemory);
+            logger.debug("Reprting metics, metric name: " + nodeStatPrefix + "used_bytes_memory" + ", value: " + totalUsedMemory);
+                        
+            reportMetric(nodeStatPrefix + "used_bytes_disk", "", totalUsedDisk);
+            logger.debug("Reprting metics, metric name: " + nodeStatPrefix + "used_bytes_disk" + ", value: " + totalUsedDisk);
+            	
+        	
+        }
+
         for (Map.Entry<String, String> nodeStat : nodeStats.entrySet()) {
             String metric_name = nodeStatPrefix + nodeStat.getKey();
             float value = Float.parseFloat(nodeStat.getValue());
@@ -296,10 +300,7 @@ public class AerospikeAgent extends Agent {
         String baseSummaryMetric = METRIC_BASE_NAME + SLASH + SUMMARY + SLASH;
         /* Getting one active node from cluster and getting its stats*/
         Float totalUsedMemory = (float) 0;
-        //Float totalMemory = (float) 0;
         Float totalUsedDisk = (float) 0;
-        //Float totalDisk = (float) 0;
-        //Float batchInitiate = (float) 0;
         
         Node[] nodes = base.getAerospikeNodes();
         
@@ -307,11 +308,10 @@ public class AerospikeAgent extends Agent {
             Map<String, String> memoryStats = base.getMemoryStats(node);
             Map<String, String> diskStats = base.getDiskStats(node);
             
-            totalUsedMemory += Float.parseFloat(memoryStats.get("used_bytes_memory"));
-            //totalMemory += Float.parseFloat(nodeStats.get("total-bytes-memory"));
-            totalUsedDisk += Float.parseFloat(diskStats.get("used_bytes_disk"));
-            //totalDisk += Float.parseFloat(nodeStats.get("total-bytes-disk"));
-            //batchInitiate += Float.parseFloat(nodeStats.get("batch_initiate"));
+            if (memoryStats.get("used_bytes_memory") != null && memoryStats.get("used_bytes_memory") != "n/s")
+            	totalUsedMemory += Float.parseFloat(memoryStats.get("used_bytes_memory"));
+            if (diskStats.get("used_bytes_disk") != null && diskStats.get("used_bytes_disk") != "n/s")
+            	totalUsedDisk += Float.parseFloat(diskStats.get("used_bytes_disk"));
         }
         
         Node node = base.getAerospikeNodes()[0];
@@ -322,22 +322,13 @@ public class AerospikeAgent extends Agent {
                 logger.debug("Reprting metics, metric name: " + baseSummaryMetric + "cluster_size" + ", value: " + Float.parseFloat(nodeStats.get("cluster_size")));
             }
         }
-        
+
         reportMetric(baseSummaryMetric + "used_bytes_memory", "", totalUsedMemory);
         logger.debug("Reprting metics, metric name: " + baseSummaryMetric + "used_bytes_memory" + ", value: " + totalUsedMemory);
         
-        //reportMetric(baseSummaryMetric + "total_memory", "", totalMemory);
-        //logger.debug("Reprting metics, metric name: " + baseSummaryMetric + "total_memory" + ", value: " + totalMemory);
         
         reportMetric(baseSummaryMetric + "used_bytes_disk", "", totalUsedDisk);
-        logger.debug("Reprting metics, metric name: " + baseSummaryMetric + "used_bytes_disk" + ", value: " + totalUsedDisk);
-        
-        //reportMetric(baseSummaryMetric + "total_disk", "", totalDisk);
-        //logger.debug("Reprting metics, metric name: " + baseSummaryMetric + "total_disk" + ", value: " + totalDisk);
-        
-        //reportMetric(baseSummaryMetric + "batch_initiate", "", batchInitiate);
-        //logger.debug("Reprting metics, metric name: " + baseSummaryMetric + "batch_initiate" + ", value: " + batchInitiate);
-        
+        logger.debug("Reprting metics, metric name: " + baseSummaryMetric + "used_bytes_disk" + ", value: " + totalUsedDisk);      
     }
     
     /**
@@ -368,7 +359,7 @@ public class AerospikeAgent extends Agent {
      * A method to report node latency for reads, writes_master, proxy, udf and
      * query.
      */
-    public void reportNodeLatency() {
+    public void reportNodesLatency() {
         logger.debug("Reporting node latency.");
         String baseLatentyMetric = metricBaseName + SLASH + LATENCY_STATS + SLASH;
         /* setting default values to cluster-wide latency map */
@@ -394,7 +385,7 @@ public class AerospikeAgent extends Agent {
                     /* calculating cluster-wide latency */
                     
                     calculateClusterWideLatency(key, dataEntry.getKey(),
-                    		metric_value);
+                    		metric_value, node);
                     
                 }
             }
@@ -409,15 +400,39 @@ public class AerospikeAgent extends Agent {
      */
     
     private void initClusterWideLatency() {
+    	logger.debug("Init clusterwide latency.");
         clusterWideLatency.clear();
+        clusterWideNamespaceLatency.clear();
+      
     }
     
-    private void initClusterWideLatencyBucket(String category) {
+    private void initClusterWideLatencyBucket(Map<String, Map<String, Float>> clusterWideLatency, String category) {
         Map<String, Float> bucketMap = new HashMap<String, Float>();
         for (String bucket : LATENCY_BUCKETS) {
             bucketMap.put(bucket, (float) 0);
         }
         clusterWideLatency.put(category, bucketMap);
+    }
+
+    
+    /**
+     * Method to calculate cluster-wide latency
+     *
+     * @param category
+     * @param bucket
+     * @param bucketValue
+     */
+    
+    
+    private void calculateLatency(Map<String, Map<String, Float>> clusterWideLatency, String category, String bucket, float bucketValue) {
+        logger.debug("Calculating latency.");
+        float value = (float)0.0;
+        if (clusterWideLatency.containsKey(category)) {
+            value = clusterWideLatency.get(category).get(bucket) + bucketValue;
+        } else {
+            initClusterWideLatencyBucket(clusterWideLatency, category);
+        }
+        clusterWideLatency.get(category).put(bucket, value);
     }
     
     /**
@@ -427,15 +442,21 @@ public class AerospikeAgent extends Agent {
      * @param bucket
      * @param bucketValue
      */
-    private void calculateClusterWideLatency(String category, String bucket, float bucketValue) {
+    
+    
+    private void calculateClusterWideLatency(String category, String bucket, float bucketValue, Node node) {
         logger.debug("Calculating clusterwide latency.");
-        float value = (float)0.0;
-        if (clusterWideLatency.containsKey(category)) {
-            value = clusterWideLatency.get(category).get(bucket) + bucketValue;
-        } else {
-            initClusterWideLatencyBucket(category);
-        }
-        clusterWideLatency.get(category).put(bucket, value);
+        boolean newAsd = base.newAsdversion(node);
+
+        if (newAsd == true) {
+    		String[] lst = category.split("-");
+    		//calculateLatency(clusterWideLatency, category, bucket, bucketValue);
+    		if(lst.length > 0)
+        		calculateLatency(clusterWideNamespaceLatency, category, bucket, bucketValue);
+    		category = lst[0];
+    		
+    	}
+		calculateLatency(clusterWideLatency, category, bucket, bucketValue);
     }
     
     /**
@@ -443,8 +464,9 @@ public class AerospikeAgent extends Agent {
      *
      * @param clusterSize
      */
-    private void reportClusterWideLatency(int clusterSize) {
-        logger.debug("Reporting clusterwide latency.");
+    private void reportLatency(int clusterSize, Map<String, Map<String, Float>> clusterWideLatency) {
+        logger.debug("Reporting latency.");
+        logger.debug(clusterWideLatency);
         String baseClusterWideLatencyMetric = METRIC_BASE_NAME + SLASH + SUMMARY + SLASH + LATENCY + SLASH;
         for (Map.Entry<String, Map<String, Float>> entry : clusterWideLatency.entrySet()) {
             String key = entry.getKey();
@@ -469,6 +491,13 @@ public class AerospikeAgent extends Agent {
             }
         }
     }
+    
+    private void reportClusterWideLatency(int clusterSize) {
+        logger.debug("Reporting clusterwide latency.");
+    	reportLatency(clusterSize, clusterWideLatency);
+    	reportLatency(clusterSize, clusterWideNamespaceLatency);
+    }
+
     
     /**
      * Method to report namespace statistics.
@@ -529,7 +558,7 @@ public class AerospikeAgent extends Agent {
             Map<String, Map<String, String>> perNodeStats = reportNodesData();
             Main.setStatistcs(perNodeStats);
             
-            reportNodeLatency();
+            reportNodesLatency();
             reportNamespaceStats();
             reportSummaryMetric();
             reportTotalTps();

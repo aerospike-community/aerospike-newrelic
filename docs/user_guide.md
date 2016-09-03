@@ -21,6 +21,10 @@ These include following dashboards.
 	   * Used memory, disk (Empty for Aerospike Server < 3.9)
 	   * Master, replica objects
 	   * Expired, evicted objects
+	   * Scan completed (Empty for Aerospike Server < 3.9)
+	   * Batch Read records (Empty for Aerospike Server < 3.9)
+	   * Migration Incoming remaning, Migration Outgoing remaining. (Empty for Aerospike Server < 3.9)
+
    4. Latency : This Dashboard shows per cluster latency stats graph. Added graphs are given below. Aerospike Server > 3.9 give latency at namespace level.
 	   * Read, writes
 	   * UDF, Query, Proxy
@@ -73,16 +77,19 @@ Categories are :
 	   * Component/aerospike/nodeStats/{Node_IP}/{stat}
 	       * Component/aerospike/nodeStats/{Node_IP}/used_bytes_disk[]
 	   * Component/aerospike/throughputStats/{Node_IP}/{stat category}/{stat}
-	       * Component/aerospike/throughputStats/{Node_IP}/reads/success[] 
+	       * Component/aerospike/throughputStats/{Node_IP}/reads/success[]
+
    3. NamespaceStats: In this category stats per namespace are getting pushed. Metrics are pushed in the following manner
 	   * Component/aerospike/namespaceStats/{Node_IP}/{namespace}/{stat}
 	       * Component/aerospike/namespaceStats/{Node_IP}/{namespace}/used_bytes_memory[]
 	       * Component/aerospike/namespaceStats/{Node_IP}/{namespace}/master_objects[]
+
    4. LatencyStat: In this category latency stats per node are getting pushed. Aerospike Server > 3.9 give latency per node per namespace. Metrics are pushed in the following manner
 	   * Component/aerospike/latencyStats/{Node_IP}/{stat category}/{stat subcategory}/{stat}
 	       * Component/aerospike/latencyStats/{Node_IP}/write/0ms_to_1ms/value[]
 	   * Component/aerospike/latencyStats/{Node_IP}/{stat category-{namespace}}/{stat subcategory}/{stat}
 	       * Component/aerospike/latencyStats/{Node_IP}/write-{test}/0ms_to_1ms/value[]
+
    5. ThroughputStat:  In this category throughput stats (reads and writes) per node are getting pushed. Metrics are pushed in the following 
 	   * Component/aerospike/throughputStats/{Node_IP}/{stat category}/{stat}
 	       * Component/aerospike/throughputStats/{Node_IP}/reads/success[]

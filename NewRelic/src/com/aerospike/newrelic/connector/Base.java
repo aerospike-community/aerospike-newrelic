@@ -208,10 +208,13 @@ public class Base {
 			if (key.contains("writes"))
 				key = "write";
 			
-			String[] lst = key.split("-");
-			if (lst.length > 1) {
-				key = lst[1] + "-" + lst[0];
-			}
+            boolean newAsd = newAsdversion(node);
+            if (newAsd == true) {
+				String[] lst = key.split("-");
+				if (lst.length > 1) {
+					key = lst[1] + "-" + lst[0];
+				}
+            }
 			
 			if (key.contains("writes_reply"))
 				continue;
@@ -264,7 +267,6 @@ public class Base {
 
 	/**
 	 * Method to get namespaces for Aerospike node.
-<<<<<<< HEAD
 	 * 
 	 * @return String[] Array of Namespaces
 	 */
@@ -293,36 +295,6 @@ public class Base {
 	/**
 	 * New Added to handle >3.9 version
 	 */
-=======
-	 * 
-	 * @return String[] Array of Namespaces
-	 */
-	public String[] getNamespaces() {
-
-		Node node = getAerospikeNodes()[0];
-		String[] namespaces;
-		String filter = "namespaces";
-		String ns_str = "";
-		if (node != null)
-			ns_str = Info.request(null, node, filter);
-		namespaces = ns_str.split(";");
-		return namespaces;
-	}
-
-
-	/**
-	 * Method to close all connection to Aerospike server.
-	 * 
-	 */
-	public void closeClientConnections() {
-		if (this.client != null)
-			this.client.close();
-	}
-	
-	/**
-	 * New Added to handle >3.9 version
-	 */
->>>>>>> a245cd73c9045254b185bc64f7ddbd60f8a2007c
 	
 	public boolean newAsdversion(Node node) {
 		logger.debug("Check ASD version is new(>3.9) or old(<3.9)");
@@ -377,20 +349,13 @@ public class Base {
 		}
 
 		Map<String, String> readWriteInfo = getReadWriteInfoFromNodes(node);
-<<<<<<< HEAD
 		newReadReqs = readWriteInfo.get("readReqs");
 		newReadSuccess = readWriteInfo.get("readSuccess");
 		newWriteReqs = readWriteInfo.get("writeReqs");
 		newWriteSuccess = readWriteInfo.get("writeReqs");
 
 		Main.rwStatsHistory.put(nodeName, readWriteInfo);
-=======
-		newReadReqs = readWriteInfo.get("newReadReqs");
-		newReadSuccess = readWriteInfo.get("newReadSuccess");
-		newWriteReqs = readWriteInfo.get("newWriteReqs");
-		newWriteSuccess = readWriteInfo.get("newWriteSuccess");
 
->>>>>>> a245cd73c9045254b185bc64f7ddbd60f8a2007c
 
 		//Integer timestamp = Calendar.getInstance().get(Calendar.MINUTE) * 60 + Calendar.getInstance().get(Calendar.SECOND);
 		Long timeStamp = System.currentTimeMillis() / 1000l;
@@ -473,17 +438,11 @@ public class Base {
 		if (nodeStats != null && nodeStats.containsKey("stat_write_success"))
 			newWriteSuccess = nodeStats.get("stat_write_success");
 		
-<<<<<<< HEAD
 		readWriteInfo.put("readReqs", newReadReqs);
 		readWriteInfo.put("readSuccess", newReadSuccess);
 		readWriteInfo.put("writeReqs", newWriteReqs);
 		readWriteInfo.put("writeSuccess", newWriteSuccess);
-=======
-		readWriteInfo.put("newReadReqs", newReadReqs);
-		readWriteInfo.put("newReadSuccess", newReadSuccess);
-		readWriteInfo.put("newWriteReqs", newWriteReqs);
-		readWriteInfo.put("newWriteSuccess", newWriteSuccess);
->>>>>>> a245cd73c9045254b185bc64f7ddbd60f8a2007c
+
 		return readWriteInfo;
 		
 	}
@@ -493,54 +452,55 @@ public class Base {
 		logger.debug("getReadWriteInfoFrom NamespaceStats");
 		Map<String, String> readWriteInfo = new HashMap<String, String>();
 		String[] namespaces = this.getNamespaces();
-<<<<<<< HEAD
 		float newReadSuccess = 0;
 		float newReadReqs = 0;
 		float newWriteSuccess = 0;
 		float newWriteReqs = 0;
-=======
-		int newReadSuccess = 0;
-		int newReadReqs = 0;
-		int newWriteSuccess = 0;
-		int newWriteReqs = 0;
->>>>>>> a245cd73c9045254b185bc64f7ddbd60f8a2007c
+
 		boolean writeCondition = false;
 		boolean readCondition = false;
 		
 		if (namespaces.length != 0) {
 			for (String namespace : namespaces) {
 				Map<String, String> namespaceStats = getNamespaceStatistics(namespace, node);
-				logger.debug(namespaceStats);
+				//logger.debug(namespaceStats);
 				if (namespaceStats != null && namespaceStats.containsKey("client_read_success") && 
 						namespaceStats.containsKey("client_read_error")) {
-<<<<<<< HEAD
-					newReadSuccess =+ Float.parseFloat(namespaceStats.get("client_read_success"));
-					newReadReqs =+ (Float.parseFloat(namespaceStats.get("client_read_error")) + 
+					
+					float readSuccess = Float.parseFloat(namespaceStats.get("client_read_success"));
+					float readReqs = (Float.parseFloat(namespaceStats.get("client_read_error")) + 
 							Float.parseFloat(namespaceStats.get("client_read_success")));
-=======
-					newReadSuccess =+ Integer.parseInt(namespaceStats.get("client_read_success"));
-					newReadReqs =+ (Integer.parseInt(namespaceStats.get("client_read_error")) + 
-							Integer.parseInt(namespaceStats.get("client_read_success")));
->>>>>>> a245cd73c9045254b185bc64f7ddbd60f8a2007c
+					
+					logger.debug("readSuccess: " + readSuccess);
+					logger.debug("readReqs: " + readReqs);
+
+					newReadSuccess = newReadSuccess + readSuccess;
+					newReadReqs = newReadReqs + readReqs;
+					
+					logger.debug("newReadSuccess: " + newReadSuccess);
+					logger.debug("newReadReqs: " + newReadReqs);
 					readCondition = true;
 				}
 		
 				if (namespaceStats != null && namespaceStats.containsKey("client_write_success") &&
 						namespaceStats.containsKey("client_write_error")) {
-<<<<<<< HEAD
-					newWriteSuccess = Float.parseFloat(namespaceStats.get("client_write_success"));
-					newWriteReqs =+ (Float.parseFloat(namespaceStats.get("client_write_error")) + 
+					
+					float writeSuccess = Float.parseFloat(namespaceStats.get("client_write_success"));
+					float writeReqs = (Float.parseFloat(namespaceStats.get("client_write_error")) + 
 							Float.parseFloat(namespaceStats.get("client_write_success")));
-=======
-					newWriteSuccess = Integer.parseInt(namespaceStats.get("client_write_success"));
-					newWriteReqs =+ (Integer.parseInt(namespaceStats.get("client_write_error")) + 
-							Integer.parseInt(namespaceStats.get("client_write_success")));
->>>>>>> a245cd73c9045254b185bc64f7ddbd60f8a2007c
+					
+					logger.debug("writeSuccess: " + writeSuccess);
+					logger.debug("writeReqs: " + writeReqs);
+					
+					newWriteSuccess = newWriteSuccess + writeSuccess;
+					newWriteReqs = newWriteReqs + writeReqs;
+					
+					logger.debug("newWriteSuccess: " + newWriteSuccess);
+					logger.debug("newWriteReqs: " + newWriteReqs);
 					writeCondition = true;
 				}
 			}
 			if (readCondition == true) {
-<<<<<<< HEAD
 				readWriteInfo.put("readSuccess", Float.toString(newReadSuccess));
 				readWriteInfo.put("readReqs", Float.toString(newReadReqs));
 			} else {
@@ -553,20 +513,7 @@ public class Base {
 			} else {
 				readWriteInfo.put("writeSuccess", "");
 				readWriteInfo.put("writeReqs", "");
-=======
-				readWriteInfo.put("newReadSuccess", Integer.toString(newReadSuccess));
-				readWriteInfo.put("newReadReqs", Integer.toString(newReadReqs));
-			} else {
-				readWriteInfo.put("newReadSuccess", "");
-				readWriteInfo.put("newReadReqs", "");
-			}
-			if (writeCondition == true) {
-				readWriteInfo.put("newWriteSuccess", Integer.toString(newWriteSuccess));
-				readWriteInfo.put("newWriteReqs", Integer.toString(newWriteReqs));
-			} else {
-				readWriteInfo.put("newWriteSuccess", "");
-				readWriteInfo.put("newWriteReqs", "");
->>>>>>> a245cd73c9045254b185bc64f7ddbd60f8a2007c
+
 			}
 		}	
 		return readWriteInfo;		
@@ -597,13 +544,7 @@ public class Base {
 		Map<String, String> memoryStats = new HashMap<String, String>();
 		try {
 			memoryStats.put("used_bytes_memory", nodeStats.get("used_bytes_memory"));
-			//memoryStats.put("total_bytes_memory", nodeStats.get("total_bytes_memory"));
-			//Float freeBytes = (Float.parseFloat(nodeStats.get("total_bytes_memory"))
-			//		- Float.parseFloat(nodeStats.get("used_bytes_memory")));
-			//memoryStats.put("free_bytes_memory", Float.toString(freeBytes));
 		} catch (Exception exception) {
-			//memoryStats.put("free_bytes_memory", "n/s");
-			//memoryStats.put("total_bytes_memory", "n/s");
 			memoryStats.put("used_bytes_memory", "n/s");
 			logger.error("ERROR: ", exception);
 		}
@@ -617,31 +558,26 @@ public class Base {
 		logger.debug("Getting namespace memory info");
 		String[] namespaces = this.getNamespaces();
 		Map<String, String> memoryStats = new HashMap<String, String>();
-		float totalUsedMemory = (float)0.0;
-		//float totalMemory = (float)0.0;
+		float totalUsedMemory = 0;
 
-		// There are few changed in 3.9 stats
-		// (global stat)used-bytes-memory -> (namespace stat)memory_used_bytes
-		// (global stat)total-bytes-memory -> (namespace config)memory-size
+		/*
+		 * There are few changed in 3.9 stats
+		 * (global stat)used-bytes-memory -> (namespace stat)memory_used_bytes
+		 * (global stat)total-bytes-memory -> (namespace config)memory-size
+		 */
 		if (namespaces.length != 0) {
 			try {
 				for (String namespace : namespaces) {
 					Map<String, String> namespaceStats = getNamespaceStatistics(namespace, node);
-					//totalUsedMemory =+ Float.parseFloat(namespaceStats.get("memory_used_bytes"));
-					totalUsedMemory =+ Double.valueOf(namespaceStats.get("memory_used_bytes")).floatValue();
-
-					//totalMemory =+ Float.parseFloat(namespaceStats.get("memory_size"));
-					logger.info("totalUsedMemory: " + totalUsedMemory);
-					//logger.info("totalMemory: " + totalMemory);
+					if (namespaceStats.get("memory_used_bytes") != null) {
+						float mem = Float.parseFloat(namespaceStats.get("memory_used_bytes"));
+						logger.debug("usedMemory: " + mem);
+						totalUsedMemory = totalUsedMemory + mem;
+						logger.debug("totalUsedMemory: " + totalUsedMemory);
+					}
 				}
-				//float freeBytes = totalMemory - totalUsedMemory;
-				memoryStats.put("used_bytes_memory", Float.toString(totalUsedMemory));
-				//memoryStats.put("total_bytes_memory", Float.toString(totalMemory));
-				//memoryStats.put("free_bytes_memory", Float.toString(freeBytes));
-				
+				memoryStats.put("used_bytes_memory", Float.toString(totalUsedMemory));				
 			} catch (Exception exception) {
-				//memoryStats.put("free_bytes_memory", "n/s");
-				//memoryStats.put("total_bytes_memory", "n/s");
 				memoryStats.put("used_bytes_memory", "n/s");
 				logger.error("ERROR: ", exception);
 			}
@@ -676,13 +612,9 @@ public class Base {
 		Map<String, String> diskStats = new HashMap<String, String>();
 		try {
 			diskStats.put("used_bytes_disk", nodeStats.get("used_bytes_disk"));
-			//diskStats.put("total_bytes_disk", nodeStats.get("total_bytes_disk"));
-			//Float freeBytes = (Float.parseFloat(nodeStats.get("total_bytes_disk"))
-			//		- Float.parseFloat(nodeStats.get("used_bytes_disk")));
-			//diskStats.put("free_bytes_disk", Float.toString(freeBytes));
+
 		} catch (Exception exception) {
-			//diskStats.put("free_bytes_disk", "n/s");
-			//diskStats.put("total_bytes_disk", "n/s");
+
 			diskStats.put("used_bytes_disk", "n/s");
 			logger.error("ERROR: ", exception);
 		}
@@ -696,33 +628,33 @@ public class Base {
 		logger.debug("Getting namespace disk info");
 		String[] namespaces = this.getNamespaces();
 		Map<String, String> diskStats = new HashMap<String, String>();
-		float totalUsedDisk = (float) 0.0;
+		float totalUsedDisk = 0;
 		//float totalDisk = (float)0.0;
 		
-		// There are few changed in 3.9 stats
-		// (global stat)used-bytes-disk -> (namespace stat)device_used_bytes
-		// (global stat)total-bytes-disk -> (namespace config)device-total-bytes
+		/*
+		 *  There are few changed in 3.9 stats
+		 *  (global stat)used-bytes-disk -> (namespace stat)device_used_bytes
+		 *  (global stat)total-bytes-disk -> (namespace config)device-total-bytes
+		 */
 		
 		if (namespaces.length != 0) {
 			try {
 				for (String namespace : namespaces) {
 					Map<String, String> namespaceStats = getNamespaceStatistics(namespace, node);
-					logger.info("namespaceStats" + namespaceStats);
+					//logger.info("namespaceStats" + namespaceStats);
 					//totalUsedDisk =+ Float.parseFloat(namespaceStats.get("device_used_bytes"));
-					totalUsedDisk =+ Double.valueOf(namespaceStats.get("device_used_bytes")).floatValue();
-
-					//totalDisk =+ Float.parseFloat(namespaceStats.get("device_total_bytes"));
-					logger.info("totalUsedDisk: " + totalUsedDisk);
-					//logger.info("totalDisk: " + totalDisk);
+					if (namespaceStats.get("device_used_bytes") != null) {
+						float disk = Float.parseFloat(namespaceStats.get("device_used_bytes"));
+						logger.debug("used disk: " + disk);
+						totalUsedDisk = totalUsedDisk + disk;
+						logger.debug("totalUsedDisk: " + totalUsedDisk);
+					}
 				}
 				//float freeBytes = totalDisk - totalUsedDisk;
 				diskStats.put("used_bytes_disk", Float.toString(totalUsedDisk));
-				//diskStats.put("total_bytes_disk", Float.toString(totalDisk));
-				//diskStats.put("free_bytes_disk", Float.toString(freeBytes));
+
 				
 			} catch (Exception exception) {
-				//diskStats.put("free_bytes_disk", "n/s");
-				//diskStats.put("total_bytes_disk", "n/s");
 				diskStats.put("used_bytes_disk", "n/s");
 				logger.error("ERROR: ", exception);
 			}
@@ -732,8 +664,5 @@ public class Base {
 		return diskStats;
 	}	
 	
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> a245cd73c9045254b185bc64f7ddbd60f8a2007c
+
