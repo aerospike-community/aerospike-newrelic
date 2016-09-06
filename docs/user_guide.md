@@ -81,7 +81,7 @@ Categories are :
 
    3. NamespaceStats: In this category stats per namespace are getting pushed. Metrics are pushed in the following manner
 	   * Component/aerospike/namespaceStats/{Node_IP}/{namespace}/{stat}
-	       * Component/aerospike/namespaceStats/{Node_IP}/{namespace}/used_bytes_memory[]
+	       * Component/aerospike/namespaceStats/{Node_IP}/{namespace}/memory_used_bytes[]
 	       * Component/aerospike/namespaceStats/{Node_IP}/{namespace}/master_objects[]
 
    4. LatencyStat: In this category latency stats per node are getting pushed. Aerospike Server > 3.9 give latency per node per namespace. Metrics are pushed in the following manner
