@@ -5,15 +5,15 @@ User installing new relic plugin for aerospike will get some per-defined dashboa
 These include following dashboards.
 
    1. Overview :  This Dashboard shows per cluster stats graph. Added graphs are given below.
-	   * ClusterSize
+	   * Cluster Size
 	   * Reads, Writes
 	   * Used memory, disk
    2. Node Statistics : This Dashboard shows per node stats graph. Added graphs are given below.
 	   * Reads, writes
 	   * Used memory, disk
 	   * Client connection
-       * Node uptime
-	   * Migration incoming, outgoing (Empty for Aerospike Server > 3.9)
+           * Node uptime
+	   * Migration outgoing remaining(Empty for Aerospike Server > 3.9)
 	   * Objects
 	   * Basic scan succeeded (Empty for Aerospike Server > 3.9)
 	   * Batch initiate

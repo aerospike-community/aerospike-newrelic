@@ -8,7 +8,7 @@ Collection and visualization of various metric from Aerospike includes :
 - Namespaces Statistics
 - Latency
 
-**Note** - There are many changes in stats naming for all Aerospike_Server > 3.9.0. Many stats have been moved from node level to namespace level. So there could be few graphs under above category which may be empty. All graphs depending on older(Aerospike_Serever <3.9) Server would be depricated in future.
+**Note** - There are many changes in stats naming for all Aerospike_Server > 3.9.0. Many stats have been moved from node level to namespace level. So there could be few graphs under above categories which may be empty. All graphs depending on older(Aerospike_Serever <3.9) Server would be deprecated in future.
 
 
 ----
