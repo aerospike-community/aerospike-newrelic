@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.aerospike.client.Host;
+import com.aerospike.client.Log;
 import com.aerospike.client.AerospikeException;
 import com.aerospike.client.AerospikeException.Connection;
 import com.aerospike.client.cluster.Node;
@@ -514,6 +515,7 @@ public class AerospikeAgent extends Agent {
                 Node[] nodes = base.getAerospikeNodes();
                 for (Node node : nodes) {
                     Map<String, String> namespaceStats = base.getNamespaceStatistics(namespace, node);
+                    logger.debug("Namespacestats: " + namespaceStats);
                     if (namespaceStats != null && namespaceStats.size() != 0) {
                         String namespacePrefix = namespaceBaseMatric + NAMESPACE_STATS + SLASH + node.getHost().name + SLASH + namespace + SLASH;
                         for (Map.Entry<String, String> stat : namespaceStats.entrySet()) {
