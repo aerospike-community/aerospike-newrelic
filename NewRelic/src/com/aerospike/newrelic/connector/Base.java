@@ -22,7 +22,6 @@ import java.util.regex.Pattern;
 /**
  * Base class to communicate with Aerospike.
  * 
- * @author Aniruddha Atre
  *
  */
 public class Base {
@@ -35,10 +34,8 @@ public class Base {
 	/**
 	 * Method to initialize Aerospike client and policy.
 	 * 
-	 * @param ip
-	 *            IP of the Aerospike node
-	 * @param port
-	 *            Port number of Aeropsike node
+	 * @param host_list
+	 *            Host list to create java Aerospike client object.
 	 * @param user
 	 *            User name for Aerospike node if security enabled else null
 	 * @param password
@@ -295,7 +292,6 @@ public class Base {
 	/**
 	 * New Added to handle >3.9 version
 	 */
-	
 	public boolean newAsdversion(Node node) {
 		logger.debug("Check ASD version is new(>3.9) or old(<3.9)");
 		Map<String, String> nodeStats = null;
@@ -523,8 +519,7 @@ public class Base {
 	/**
 	 * Method to extract memory stat metrics from node statistics.
 	 * 
-	 * @param nodeStats
-	 *            Map of node statistics
+	 * @param Node
 	 * @return Map<String, String> Map of memory statistics
 	 */
 	public Map<String, String> getMemoryStats(Node node) {
@@ -589,11 +584,9 @@ public class Base {
 
 	
 	/**
-	 * Method to extract memory stat metrics from node statistics.
-	 * 
-	 * @param nodeStats
-	 *            Map of node statistics
-	 * @return Map<String, String> Map of memory statistics
+	 * Method to extract Disk stat metrics from node statistics.
+	 * @param Node
+	 * @return Map<String, String> Map of Disk statistics
 	 */
 	public Map<String, String> getDiskStats(Node node) {
 		boolean newAsd = newAsdversion(node);

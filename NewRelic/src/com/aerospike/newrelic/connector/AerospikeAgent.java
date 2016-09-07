@@ -34,7 +34,6 @@ import com.newrelic.metrics.publish.util.Logger;
  * Agent for Aerospike. This agent will log Aerospike statistics, namespace
  * statistics, latency and throughput metrics for an Aerospike node.
  *
- * @author Aniruddha Atre
  */
 public class AerospikeAgent extends Agent {
     
@@ -127,6 +126,7 @@ public class AerospikeAgent extends Agent {
         builder.append("clusterName: ").append(clusterName);
         return builder.toString();
     }
+    
     /**
      * Method to set default values to readTpsHistory and writeTpsHistory
      *
@@ -164,7 +164,7 @@ public class AerospikeAgent extends Agent {
     
     /**
      * Method to fetch node statistics from base and report to new relic.
-     *
+     * For ASD>3.9 derive used_bytes_memory and use_bytes_disk.
      * @return Map<String, String> A map of node statistics
      */
     public Map<String, String> reportNodeStatistics(Node node) {
@@ -290,11 +290,6 @@ public class AerospikeAgent extends Agent {
     /**
      * Method to report Summary metric
      *
-     * @param totalMemory
-     * @param totalDisk
-     * @param totalUsedMemory
-     * @param batchInitiate
-     * @param totalUSedDisk
      */
     public void reportSummaryMetric() {
         logger.debug("Reporting summary metric.");
@@ -407,6 +402,9 @@ public class AerospikeAgent extends Agent {
       
     }
     
+    /**
+     * Init latency buckets for some category.
+     */
     private void initClusterWideLatencyBucket(Map<String, Map<String, Float>> clusterWideLatency, String category) {
         Map<String, Float> bucketMap = new HashMap<String, Float>();
         for (String bucket : LATENCY_BUCKETS) {
@@ -417,14 +415,13 @@ public class AerospikeAgent extends Agent {
 
     
     /**
-     * Method to calculate cluster-wide latency
+     * Method to calculate latency
      *
+     * @param clusterWideLatency: latency map
      * @param category
      * @param bucket
      * @param bucketValue
-     */
-    
-    
+     */ 
     private void calculateLatency(Map<String, Map<String, Float>> clusterWideLatency, String category, String bucket, float bucketValue) {
         logger.debug("Calculating latency.");
         float value = (float)0.0;
@@ -435,16 +432,15 @@ public class AerospikeAgent extends Agent {
         }
         clusterWideLatency.get(category).put(bucket, value);
     }
+
     
     /**
-     * Method to calculate cluster-wide latency
+     * Method to calculate cluster-wide latency and cluster wide namespace latency for ASD>3.9
      *
      * @param category
      * @param bucket
      * @param bucketValue
      */
-    
-    
     private void calculateClusterWideLatency(String category, String bucket, float bucketValue, Node node) {
         logger.debug("Calculating clusterwide latency.");
         boolean newAsd = base.newAsdversion(node);
@@ -461,9 +457,10 @@ public class AerospikeAgent extends Agent {
     }
     
     /**
-     * Method to report cluster-wide latency
+     * Method to report latency
      *
      * @param clusterSize
+     * @param clusterWideLatency: latency map
      */
     private void reportLatency(int clusterSize, Map<String, Map<String, Float>> clusterWideLatency) {
         logger.debug("Reporting latency.");
@@ -492,6 +489,7 @@ public class AerospikeAgent extends Agent {
             }
         }
     }
+    
     
     private void reportClusterWideLatency(int clusterSize) {
         logger.debug("Reporting clusterwide latency.");
