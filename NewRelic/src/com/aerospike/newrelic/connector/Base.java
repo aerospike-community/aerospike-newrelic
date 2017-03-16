@@ -190,8 +190,12 @@ public class Base {
 		for (Integer i = 0; i < latencyBuckets.length; i += 2) {
 			Map<String, String> data = new HashMap<String, String>();
 			String line0 = latencyBuckets[i];
-			if (line0.contains("no-data")) {
-				logger.error("Not enough info for latency: error-run-too-short-or-back-too-small. ->" + line0);
+			if (line0.contains("error-")) {
+				logger.error("Not enough info for latency: -> " + line0);
+
+				// Error will be single line. So, step back one line so that
+				// next iteration (which does +2) will position itself properly.
+				i--;
 				continue;
 			}
 			String line1 = latencyBuckets[i + 1];
@@ -301,10 +305,10 @@ public class Base {
 			logger.debug("Node build: " + build);
 			String[] ver = build.split("[.]");
 			if (Integer.parseInt(ver[0]) > 3 || (Integer.parseInt(ver[0]) == 3 && Integer.parseInt(ver[1]) >= 9)) {
-				logger.info("New ASD > 3.9");
+				logger.debug("New ASD > 3.9");
 				return true;
 			} else {
-				logger.info("Old ASD < 3.9");
+				logger.debug("Old ASD < 3.9");
 				return false;
 			}	
 		} else {
